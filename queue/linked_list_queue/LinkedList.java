@@ -37,6 +37,7 @@ public class LinkedList<E> {
 
     public E pop_back(){
 		Element temp = back; //to return
+		if(temp==null) return null;
 		back = back.infront; //equivalently, temp.infront. The element infront of the back is the new back
 		return temp.myself;
     }
