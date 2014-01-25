@@ -10,8 +10,10 @@ class Heap:
         # testing get_child_indices
         self.heap = [i for i in range(0, 15)]
         
-        l = self.get_child_indices(5)
+        l = self.get_child_indices(2)
         print(l) # expect 11, 12
+        l = self.get_child_indices(0)
+        print(l)
 
     def insert(self, element):
         pass
@@ -21,7 +23,7 @@ class Heap:
 
     def get_child_indices(self, parent_index):
         # let k = the kth element of the level n, where k=0 corresponds to the left most node of level n and k=2^n is the right most
-        # it can be shown that the first child if element (n, k) is: (2^n - k - 1 ) + (2k) + 1 and the second is: (2^n - k - 1) + (2k) + 2
+        # it can be shown that the first child if element (n, k) is: (2^n - k - 1 ) + (2k) + 1 infront of the parent index and the second is: (2^n - k - 1) + (2k) + 2
         # how to show: there are 2^n-k-1 elements infront of the kth element on level n and 2*k elements on level n+1 by virtue that all the elements before have children
         # To find k given index i, i -  the sum of 2^k from k = 1 to n-1
         # to find n given index i, while the sum of 2^k < index+1, we are above level 'k' 
@@ -36,7 +38,7 @@ class Heap:
                 break
             n+=1
         
-        return([ (2**n - k - 1 + 2*k + 1) , (2**n - k - 1 + 2*k + 2) ]) # will simplify - kept for future debugging purposes
+        return([ (parent_index + 2**n - k - 1 + 2*k + 1) , (parent_index + 2**n - k - 1 + 2*k + 2) ]) # will simplify - kept for future debugging purposes
 
     def get_parent_index():
         pass
