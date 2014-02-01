@@ -17,7 +17,7 @@ public class LinkedList<E> {
     	size+=1;
     	Element temp = new Element(e, front, null); // The new front. The element behind it is the old front (null if empty). Being infront, there is no element infrnt of it (therefore null)
 	if(size==1) {
-		back = front;
+	    back = temp; //previously front (which was null). Now temp
 	}else{
 	    front.infront = temp; // The element infront of the old front is temp
 	}
@@ -33,11 +33,14 @@ public class LinkedList<E> {
 		Element temp = front;
 		front = front.behind;
 		return temp.myself;
+		size-=1;
     }
 
     public E pop_back(){
+	size -=1;
 		Element temp = back; //to return
 		if(temp==null) return null;
+		size-=1;
 		back = back.infront; //equivalently, temp.infront. The element infront of the back is the new back
 		return temp.myself;
     }
