@@ -16,14 +16,6 @@ class Heap:
         self.heap = [0 for i in range(initial_capacity)]
         self.size = len(element_set) + 0
 
-        # testing get_child_indices
-        self.heap = [i for i in range(0, 15)]
-
-        l = self.child_indices(2)
-        print(l) # expect 11, 12
-        l = self.child_indices(0)
-        print(l)
-
     def insert(self, element):
         pass
 
@@ -34,15 +26,26 @@ class Heap:
         """Return the indices of the child nodes of the node at parent_index
         """
 
-        # let k = the kth element of the level n, where k=0 corresponds to the left most node of level n and k=2^n is the right most
-        # it can be shown that the first child if element (n, k) is: (2^n - k - 1 ) + (2k) + 1 infront of the parent index and the second is: (2^n - k - 1) + (2k) + 2
-        # how to show: there are 2^n-k-1 elements infront of the kth element on level n and 2*k elements on level n+1 by virtue that all the elements before have children
+        # Logic:
+            # Define: the node at parent_index, call it parent
+            # Define: level of parent, call it n
+            # Define: position of parent, call it k
+            # Compute child_indices:
+                # Observation: for every node behind parent, there are two nodes on level n+1 that are necessarily behind the children of parent
+                # Define/Thus: there are 2*k nodes on level n+1 behind parent's children, call it offset
+                # The start index of level n+1 is parent_index + remainder of nodes on the level + 1, call it p
+                    # i.e. if there is one node left, parent_index + 1 will move to that node, then add one more to get to the next level
+                    # p = parent_index + (2**n - (k+1)) + 1 (k+1 to include parent itself)
+                # The first child will occur at 2*k, the second at 2*k + 1
         
         current_position = self.position(parent_index);
         n = current_position[0]
         k = current_position[1]
+
+        offset = 2*k
+        p = parent_index + (2**n) - (k+1) + 1
         
-        return([ (parent_index + 2**n - k - 1 + 2*k + 1) , (parent_index + 2**n - k - 1 + 2*k + 2) ]) # will simplify - kept for future debugging purposes
+        return([ p + offset , p + offset + 1]) # will simplify - kept for future debugging purposes
 
     def parent_index(self, child_index):
         """Return the index of the parent of the node at child_index
