@@ -16,8 +16,8 @@ class Heap:
         self.heap = [0 for i in range(initial_capacity)]
         self.size = len(element_set) + 0
 
-    def insert(self, element):
-        pass
+    def print(self):
+        print(self.heap)
 
     def pop(self):
         pass
@@ -47,7 +47,7 @@ class Heap:
         
         return([ p + offset , p + offset + 1]) # will simplify - kept for future debugging purposes
 
-    def parent_index(self, child_index):
+    def get_parent_index(self, child_index):
         """Return the index of the parent of the node at child_index
         """
 
@@ -112,6 +112,52 @@ class Heap:
         
         return ([level, position])
 
+    def compare(self, node_one, node_two):
+        """ Return true if node_one is greater than node_two, 0 otherwise
+        """
+        if(node_one > node_two):
+            return 1
+        return 0
+
+    def insert(self, node):
+            """ Insert node into the heap
+            """
+            # Logic:
+                # Insert into element into the next free index in the heap
+                # 'Bubble up' until restored
+
+            # Pseudo Code:
+                # Define: node's current index, call it i
+                # insert node at next free element (size), let i = size
+                # get parent of node, call it p
+                # get index of p, call it p_index
+                # if node is greater p
+                    # swap node and p
+                # else
+                    # restoration complete
+                # Let i = p_index
+                # repeat if i is not 0 (root)
+
+            i = self.size
+            self.heap[i] = node # initial insertion
+            while(not i==0):
+                parent_index = self.get_parent_index(i)
+                parent = self.heap[parent_index]
+
+                if(self.compare(node, parent)):
+                    print("switching {0} and {1}", node, parent)
+                    temp = parent
+                    self.heap[parent_index] = node
+                    self.heap[i] = temp
+                else:
+                    break
+            self.size = self.size + 1
 
 if __name__ == "__main__":
-    my_heap = Heap()
+    my_heap = Heap(5)
+    my_heap.insert(1)
+    my_heap.insert(50)
+    my_heap.insert(100)
+    my_heap.insert(200)
+    my_heap.insert(300)
+    my_heap.print()
