@@ -10,11 +10,26 @@ Position - the 'pseudo-index' of the node in its level (given each level is its 
 Level - The level in a binary tree given with the root at level 0
 """
 
+import random
+
 class Heap:
 
-    def __init__(self, initial_capacity=100, element_set={}):
-        self.heap = [0 for i in range(initial_capacity)]
-        self.size = len(element_set) + 0
+    def __init__(self, element_list=[], initial_capacity=20):
+        """Initialize a heap with an initial capacity of 20 or the number of elements in the provided element_set
+
+        If no element set is provided, the initial size of the heap will always be initial_capacity.
+        If an element set is provided, the initial size of the heap will always be the number of elements in the set.
+
+        """
+
+        if(len(element_list)==0):
+            self.size = 0
+            self.heap = [None for i in range(initial_capacity)]
+        else:
+            self.size = 0
+            self.heap = [None for i in range(len(element_list))]
+            for i in range(len(element_list)):
+                self.insert(element_list[i])
 
     def print(self):
         print(self.heap)
@@ -115,49 +130,55 @@ class Heap:
     def compare(self, node_one, node_two):
         """ Return true if node_one is greater than node_two, 0 otherwise
         """
-        if(node_one > node_two):
+        if(node_two == None or node_one > node_two):
             return 1
         return 0
 
     def insert(self, node):
-            """ Insert node into the heap
-            """
-            # Logic:
-                # Insert into element into the next free index in the heap
-                # 'Bubble up' until restored
+        """ Insert node into the heap
+        """
+        # Logic:
+            # Insert into element into the next free index in the heap
+            # 'Bubble up' until restored
 
-            # Pseudo Code:
-                # Define: node's current index, call it i
-                # insert node at next free element (size), let i = size
-                # get parent of node, call it p
-                # get index of p, call it p_index
-                # if node is greater p
-                    # swap node and p
-                # else
-                    # restoration complete
-                # Let i = p_index
-                # repeat if i is not 0 (root)
+        # Pseudo Code:
+            # Define: node's current index, call it i
+            # insert node at next free element (size), let i = size
+            # get parent of node, call it p
+            # get index of p, call it p_index
+            # if node is greater p
+                # swap node and p
+            # else
+                # restoration complete
+            # Let i = p_index
+            # repeat if i is not 0 (root)
 
-            i = self.size
-            self.heap[i] = node # initial insertion
-            while(not i==0):
-                parent_index = self.get_parent_index(i)
-                parent = self.heap[parent_index]
+        # if the heap is full
+        if(len(self.heap) == self.size):
+            self.heap.extend([node])
+        else:
+            self.heap[self.size] = node # next available slot is always index at 'size'
 
-                if(self.compare(node, parent)):
-                    print("switching {0} and {1}", node, parent)
-                    temp = parent
-                    self.heap[parent_index] = node
-                    self.heap[i] = temp
-                else:
-                    break
-            self.size = self.size + 1
+        i = self.size
+
+        while(not i==0):
+            parent_index = self.get_parent_index(i)
+            parent = self.heap[parent_index]
+
+            if(self.compare(node, parent)):
+                # print("switching [{0} at {1}] and [{2} at {3}]".format(node, i, parent, parent_index)) DEBUG
+                temp = parent
+                self.heap[parent_index] = node
+                self.heap[i] = temp
+            else:
+                break
+            i = parent_index
+
+        self.size = self.size + 1 # restoration complete, number of elements + 1
+
 
 if __name__ == "__main__":
-    my_heap = Heap(5)
-    my_heap.insert(1)
-    my_heap.insert(50)
-    my_heap.insert(100)
-    my_heap.insert(200)
-    my_heap.insert(300)
-    my_heap.print()
+    mList = [1,2,3,4,5,6,7,8,9,10]
+    print("Inserting: {}".format(mList))
+    heap = Heap([1,2,3,4,5,6,7,8])
+    heap.print()
