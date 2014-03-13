@@ -34,10 +34,7 @@ class Heap:
     def print(self):
         print(self.heap)
 
-    def pop(self):
-        pass
-
-    def child_indices(self, parent_index):
+    def get_child_indices(self, parent_index):
         """Return the indices of the child nodes of the node at parent_index
         """
 
@@ -130,9 +127,21 @@ class Heap:
     def compare(self, node_one, node_two):
         """ Return true if node_one is greater than node_two, 0 otherwise
         """
-        if(node_two == None or node_one > node_two):
-            return 1
-        return 0
+        if (node_two == None or node_one > node_two):
+            return True
+        return False
+
+    def swap(self, i, j):
+        temp = self.heap[i]
+        self.heap[i] = self.heap[j]
+        self.heap[j] = temp
+
+    def get_node(self, index):
+        """ Return node at 'index.' Returns 'None' if index is out of range
+        """
+        if ( index > len(self.heap)-1 ):
+            return None
+        return self.heap[index]
 
     def insert(self, node):
         """ Insert node into the heap
@@ -161,24 +170,74 @@ class Heap:
 
         i = self.size
 
-        while(not i==0):
+        while(not i==0): # while the node to be inserted has a parent (i.e. not root)
             parent_index = self.get_parent_index(i)
             parent = self.heap[parent_index]
 
             if(self.compare(node, parent)):
-                # print("switching [{0} at {1}] and [{2} at {3}]".format(node, i, parent, parent_index)) DEBUG
-                temp = parent
-                self.heap[parent_index] = node
-                self.heap[i] = temp
+                self.swap(parent_index, i)
             else:
                 break
             i = parent_index
 
         self.size = self.size + 1 # restoration complete, number of elements + 1
 
+    def pop(self):
+
+        # Logic:
+            # Remove the node at the top
+            # Replace with the last node in the heap
+            # 'Bubble down' and restore
+
+        # Pseudo-code:
+            # Store root
+            # Define: the last node in the heap, call it node
+            # Place node at root
+            # while node has children:
+                # if one of node's children is greater than node:
+                    # replace node with node's children
+
+        root = self.heap[0]
+        node = self.heap[self.size-1]
+        self.heap[self.size-1] = None
+
+        self.heap[0] = node # insert node at root
+        cur_index = 0 # current index of node
+
+        while(True):
+
+            child_indices = self.get_child_indices(cur_index);
+            first_child = self.get_node(child_indices[0])
+            second_child = self.get_node(child_indices[1])
+
+            if(not self.compare(node, first_child)): # if node is less than child 1
+                print("swapping1")
+                self.swap(cur_index, child_indices[0])
+                cur_index = child_indices[0]
+            elif(not self.compare(node, second_child)):
+                print("swapping2")
+                self.swap(cur_index, child_indices[1])
+                cur_index = child_indices[1]
+            else:
+                break
+
+        self.size = self.size - 1
+
+        return root
+
+
+
 
 if __name__ == "__main__":
     mList = [1,2,3,4,5,6,7,8,9,10]
     print("Inserting: {}".format(mList))
-    heap = Heap([1,2,3,4,5,6,7,8])
+    heap = Heap([1,2,3,4,5,6,7,8,9,10])
+    print("After insertion: ")
+    heap.print()
+    print("Inserting 100 and -5:")
+    heap.insert(100)
+    heap.insert(-5)
+    heap.print()
+    print("Popping top:")
+    heap.pop()
     heap.print()
