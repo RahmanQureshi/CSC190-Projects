@@ -5,7 +5,7 @@
 #define UNEXPECTED_ERROR -2
 #define INITIAL_SIZE 100
 
-void forceWalkTable(HashTablePTR, int);
+void checkSentinel(HashTablePTR);
 
 int main()
 {
@@ -14,13 +14,10 @@ int main()
 	CreateHashTable(mHashTableHandle, INITIAL_SIZE);
 
 	//Run tests
-	forceWalkTable(*mHashTableHandle, 1);
+	checkSentinel(*mHashTableHandle);
 }
 
-void forceWalkTable(HashTablePTR table, int numBytes){
-	int* data = (int*) table->data;
-	int i;
-	for(i=0; i<numBytes; i++){
-		printf("%u\n", data[i]);
-	}
+void checkSentinel(HashTablePTR table){
+	int* buckets = (int*) table->buckets;
+	printf("%u\n", buckets[0]);
 }

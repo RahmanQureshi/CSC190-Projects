@@ -8,9 +8,10 @@
 typedef struct
 {
     int sentinel;
-    unsigned int size;
-    Object *data; //buckets
-    char *keys;
+    unsigned int numBuckets;
+    LinkedListPTR *buckets; //buckets
+    char **keys;
+    unsigned int numKeys;
 
 } HashTableObject;
 
