@@ -15,6 +15,22 @@ int main()
 	HashTablePTR mHashTable = NULL;
 	fprintf(stderr, "Creating HashTable\n");
 	CreateHashTable(&mHashTable, INITIAL_SIZE);
+
+	fprintf(stderr, "Checking sentinal\n");
+
+	if(checkSentinel(mHashTable, (int)0xDEADBEEF)){
+		fprintf(stderr, "Sentinel good\n");
+	}else{
+		fprintf(stderr, "Setinel bad\n");
+	}
+
+	fprintf(stderr, "Inserting data\n");
+	char* key = "mKey"; 
+	int* data = malloc(sizeof(int));
+	*data = 5;
+	void* prevData;
+	InsertEntry(mHashTable, key, data, &prevData);
+
 	fprintf(stderr, "Destroying HashTable\n");
 	DestroyHashTable(&mHashTable);
 

@@ -35,5 +35,5 @@ int getHashCode(char* key, unsigned int range);
 
 int containsKey(char* key, char **keys, unsigned int length);
 
-int checkSentinel(HashTablePTR hashTable);
+int checkSentinel(HashTablePTR hashTable, int sentinel);
 

@@ -1,1 +1,1 @@
-valgrind --leak-check=full --track-origins=yes ./tester
+valgrind --leak-check=full --track-origins=yes ./$1

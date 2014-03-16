@@ -46,7 +46,7 @@ int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize )
 	fprintf(stderr, "Setting handle\n");
 
 	// Set handle
-	fprintf(stderr, "Address of Hashtable: %p\n", (void*) mHashTablePTR);
+	// fprintf(stderr, "Address of Hashtable: %p\n", (void*) mHashTablePTR); DEBUG
 
 	*hashTableHandle = mHashTablePTR;
 
@@ -90,7 +90,7 @@ int DestroyHashTable( HashTablePTR *hashTableHandle )
 
 int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousDataHandle )
 {
-	if(!checkSentinel(hashTable)){ // If the sentinel is not the first four bytes of buckets array
+	if(!checkSentinel(hashTable, (int) ( (int*)(hashTable->buckets) )[0])){ // If the sentinel is not the first four bytes of buckets array
 		return -1;
 	}
 
@@ -99,6 +99,7 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 	LinkedListPTR *buckets = hashTable->buckets;
 	char **keys = hashTable -> keys;
 
+	fprintf(stderr, "Copying keys\n");
 	// Copy key
 	char* hashKey = (char*) malloc(sizeof(char) * strlen(key));
 	strcpy(hashKey, key);
@@ -106,26 +107,35 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 	// Retrieve hash code
 	int hashCode = getHashCode(hashKey, hashTable->numBuckets);
 
+	fprintf(stderr, "Retrieving linkedlist at hashCode\n");
 	// Retrieve the list at hashCode
-	LinkedListPTR linkedList = *(buckets + OFFSET + hashCode); // TODO: CHANGE THIS
+	LinkedListPTR linkedList = *((LinkedListPTR*)((int*)(buckets) + OFFSET) + hashCode);
 	unsigned int listSize = linkedList->size;
 
+	fprintf(stderr, "Checking key\n");
 	// Add the key
 	if(!containsKey(hashKey, keys, hashTable->numKeys))
 	{
+		fprintf(stderr, "Appending key\n"); //DEBUG
 		*(keys + listSize) = hashKey;
 		hashTable->numKeys = hashTable->numKeys + 1;
 		flag = 1;
+	}else{
+		fprintf(stderr, "Key already set\n");
 	}
 
+	fprintf(stderr, "Checking previous data\n");
 	// If the linkedList contains nothing, there is no previous data, otherwise set the previous data
 	if(listSize==0){
+		fprintf(stderr, "No previous data\n");
 		*previousDataHandle = NULL;
 	}else{
+		fprintf(stderr, "Setting previous data\n");
 		peekHead(linkedList, previousDataHandle);
 		flag = 2;
 	}
 
+	fprintf(stderr, "Storing");
 	// Store in the data in the linkedlist
 	insertEntryLinkedList(linkedList, data);
 
@@ -148,9 +158,8 @@ int getHashCode(char* key, unsigned int range)
 	return 0;
 }
 
-int checkSentinel(HashTablePTR hashTable)
+int checkSentinel(HashTablePTR hashTable, int sentinel)
 {
-	int sentinel =  ( (int*)(hashTable->buckets) )[0];
 	if(sentinel == (int) SENTINEL) {
 		return 1;
 	}
