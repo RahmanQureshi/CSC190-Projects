@@ -17,8 +17,27 @@ int CreateLinkedList(LinkedListPTR *linkedListHandle)
 	return 0;
 }
 
-int insertLinkedList(LinkedListPTR linkedList, void *data)
+int insertEntryLinkedList(LinkedListPTR linkedList, void *data)
 {
+	Object* curHead = linkedList->head;
+
+	// Initialize new object. It will become the next head
+	Object* newObj = (Object*) malloc(sizeof(Object));
+	newObj->data = data;
+	newObj->previous = NULL;
+	newObj->next = curHead;
+
+	linkedList->head = newObj;
+
+	linkedList->size = linkedList->size + 1;
+
+	return 0;
+}
+
+int peekHead(LinkedListPTR linkedList, void **data)
+{
+	Object* head = linkedList->head;
+	*data = head->data;
 	return 0;
 }
 
@@ -29,11 +48,14 @@ int DestroyLinkedList(LinkedListPTR *linkedListHandle)
 
 	int i;
 	Object *next = linkedList->head;
+
 	for(i=0; i<size; i++){
 		Object* temp = next->next;
 		free(next);
 		next = temp;
 	}
+
+	free(linkedList);
 
 	return 0;
 }

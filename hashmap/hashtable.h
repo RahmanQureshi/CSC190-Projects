@@ -30,3 +30,10 @@ int FindEntry( HashTablePTR hashTable, char *key, void **dataHandle );
 int GetKeys( HashTablePTR hashTable, char * (*keysArrayHandle)[], unsigned int *keyCount );
 
 int GetLoadFactor( HashTablePTR hashTable, float *loadFactor );
+
+int getHashCode(char* key, unsigned int range);
+
+int containsKey(char* key, char **keys, unsigned int length);
+
+int checkSentinel(HashTablePTR hashTable);
+

@@ -1,3 +1,0 @@
-clang -c -pedantic -Wall -Werror -pedantic -Wconversion hashtable.c -o hashtable.o
-clang -c -pedantic -Wall -Werror -pedantic -Wconversion tester.c -o tester.o
-clang tester.o hashtable.o -o tester
