@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "linkedlist.h"
+#include "vector.h"
 
 #define offset sizeof(sentinel)
 
@@ -10,8 +11,7 @@ typedef struct
     int sentinel;
     unsigned int numBuckets;
     LinkedListPTR *buckets; //buckets
-    char **keys;
-    unsigned int numKeys;
+    VectorPTR keys;
 
 } HashTableObject;
 
@@ -33,7 +33,7 @@ int GetLoadFactor( HashTablePTR hashTable, float *loadFactor );
 
 int getHashCode(char* key, unsigned int range);
 
-int containsKey(char* key, char **keys, unsigned int length);
+int containsKey(char* key, VectorPTR keys);
 
 int checkSentinel(HashTablePTR hashTable, int sentinel);
 

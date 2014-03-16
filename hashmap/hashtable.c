@@ -19,6 +19,8 @@ int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize )
 		return -1;
 	}
 
+	CreateVector(&(mHashTablePTR->keys), initialSize);
+
 	// Set sentinel
 	mHashTablePTR->sentinel = (int) SENTINEL;
 	memcpy(mHashTablePTR->buckets, &(mHashTablePTR->sentinel), sizeof(int)); //Set Sentinal
@@ -41,7 +43,6 @@ int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize )
 
 	// Set sizes
 	mHashTablePTR->numBuckets = initialSize;
-	mHashTablePTR->numKeys = 0;
 
 	fprintf(stderr, "Setting handle\n");
 
@@ -60,7 +61,8 @@ int DestroyHashTable( HashTablePTR *hashTableHandle )
 	}
 	HashTablePTR mHashTablePTR = *hashTableHandle;
 	LinkedListPTR *buckets = mHashTablePTR->buckets;
-	char **keys = mHashTablePTR->keys;
+	VectorPTR keys = mHashTablePTR->keys;
+
 	unsigned int numBuckets = mHashTablePTR->numBuckets;
 
 	// Free data values
@@ -73,12 +75,7 @@ int DestroyHashTable( HashTablePTR *hashTableHandle )
 	}
 
 	// Free keys
-	unsigned int numKeys = mHashTablePTR->numKeys;
-	int i;
-	for(i=0; i<numKeys; i++){
-		char* key = *(keys+i);
-		free(key);
-	}
+	DestroyVector(&keys);
 
 	// Free hashtable and buckets
 	free(buckets);
@@ -97,7 +94,7 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 	int flag = 0; // 0 indicates success with no collisions
 
 	LinkedListPTR *buckets = hashTable->buckets;
-	char **keys = hashTable -> keys;
+	VectorPTR keys = hashTable -> keys;
 
 	fprintf(stderr, "Copying keys\n");
 	// Copy key
@@ -114,7 +111,7 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 
 	fprintf(stderr, "Checking key\n");
 	// Add the key
-	if(!containsKey(hashKey, keys, hashTable->numKeys))
+	if(!containsKey(hashKey, keys)) // TODO: MODIFY TO WORK WITH A VECTOR
 	{
 		fprintf(stderr, "Appending key\n"); //DEBUG
 		*(keys + listSize) = hashKey;
@@ -142,7 +139,7 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 	return flag;
 }
 
-int containsKey(char* key, char **keys, unsigned int size)
+int containsKey(char* key, VectorPTR keys)
 {
 	int i;
 	for(i=0; i<size; i++){
