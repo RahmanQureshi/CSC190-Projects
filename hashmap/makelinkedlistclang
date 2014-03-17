@@ -1,0 +1,3 @@
+clang -c -pedantic -Wall -Werror -Wconversion linkedlist.c -o linkedlist.o
+clang -c -pedantic -Wall -Werror -Wconversion linkedListTester.c -o linkedListTester.o
+clang linkedlist.o linkedListTester.o -o tester
