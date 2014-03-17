@@ -97,7 +97,6 @@ int InsertSortedLinkedList(LinkedListPTR linkedList, void* data)
 
 	linkedList->size = linkedList->size + 1;
 
-	// List order: greatest to least
 	if(linkedList->comparator == NULL){
 		return -1;
 	}
@@ -105,18 +104,17 @@ int InsertSortedLinkedList(LinkedListPTR linkedList, void* data)
 	// Create the new node
 	NodePTR newNode;
 	CreateNode(&newNode, data, NULL);
+	if(newNode==NULL){
+		return -1;
+	}
+
 	Comparator comparator = linkedList->comparator;
 
 	// Get the current head
 	NodePTR curNode = linkedList->head;
 
-	if(curNode==NULL){ // If the list is empty
-		linkedList->head = newNode;
-		return 0;
-	}
 
-	if(comparator(newNode, curNode)){
-		newNode->next = curNode;
+	if(curNode==NULL){ // If the list is empty
 		linkedList->head = newNode;
 		return 0;
 	}
@@ -125,10 +123,18 @@ int InsertSortedLinkedList(LinkedListPTR linkedList, void* data)
 		// Keep walking down
 	// If the while-loop breaks => the new node is less than the current node but greater than the next node, so it belongs after the current
 
+	// If we consider the cornercase of head first (head being less than curNode):
 	// We note that by induction, the current node MUST be less than the new node, so only check the next node
 
-	while(!comparator(newNode, curNode->next)){
-		curNode = curNode->next; // GOD DAMN... THIS IS RE-USING INFORMATION NAMELY THAT CURNODE IS ALREADY LESS. 
+	if(comparator(newNode->data, curNode->data)){ // Corner case
+		newNode->next = curNode;
+		linkedList->head = newNode;
+		return 0;
+	}
+
+	// If there is no next node, just insert
+	while(!(curNode->next==NULL) && !comparator(newNode->data, (curNode->next)->data)){
+		curNode = curNode->next;
 	}
 
 	NodePTR temp = curNode->next;
@@ -142,6 +148,72 @@ int InsertSortedLinkedList(LinkedListPTR linkedList, void* data)
 	}
 }
 
+int PeekHead(LinkedListPTR linkedList, void **data)
+{
+	Node* head = linkedList->head;
+	*data = head->data;
+	return 0;
+}
+
+int FindNode(LinkedListPTR linkedList, NodePTR* nodeHandle, void* data)
+{
+	Comparator comparator = linkedList->comparator;
+	NodePTR next = linkedList->head;
+	while(next!=NULL){
+		if(comparator(data, next->data)==0){
+			*nodeHandle = next;
+			return 0; // Found and assigned
+		}
+		next = next->next;
+	}
+	*nodeHandle = NULL;
+	return 1; // Not found
+}
+
+int DeleteNode(LinkedListPTR linkedList, void* data)
+{
+	NodePTR curNode = linkedList->head;
+
+	if(curNode==NULL){
+		return 1; // Not found
+	}
+
+	Comparator comparator = linkedList->comparator;
+
+	// If the next node is the one we are looking for, delete it and assign curNode to it's next
+	
+	if(comparator(data, curNode->data)==0){ // Check head
+		linkedList->head = curNode->next;
+		free(curNode->data); // Commented out for CSC190 purposes
+		free(curNode);
+		linkedList->size = linkedList->size - 1;
+		return 0;
+	}
+
+	while(!(curNode->next==NULL)){
+		if(comparator(data, curNode->next->data)==0){
+			NodePTR temp = curNode->next->next;
+			free(curNode->next->data); // Commented out for CSC190 Purposes
+			free(curNode->next);
+			curNode->next = temp;
+			linkedList->size = linkedList->size - 1;
+			return 0;
+		}
+		curNode = curNode->next;
+	}
+	return 1; // Not found
+}
+
+void PrintLinkedList(LinkedListPTR linkedList)
+{
+	NodePTR next = linkedList->head;
+	while(next!=NULL){
+		int* data = (int*) (next->data);
+		printf("%d ", *data);
+		next = next->next;
+	}
+	printf("\n");
+}
 
 int SetComparatorLinkedList(LinkedListPTR linkedList, Comparator comparator)
 {
@@ -160,6 +232,7 @@ int CreateNode(NodePTR* nodeHandle, void* data, NodePTR next)
 	return 0;
 }
 
+
 int DefaultComparator(void* dataOne, void* dataTwo)
 {
 	int* one = (int*) dataOne;
@@ -168,23 +241,10 @@ int DefaultComparator(void* dataOne, void* dataTwo)
 	if(two==NULL || *one>*two){
 		return 1;
 	}
-	return 0;
-}
 
-int PeekHead(LinkedListPTR linkedList, void **data)
-{
-	Node* head = linkedList->head;
-	*data = head->data;
-	return 0;
-}
-
-void PrintLinkedList(LinkedListPTR linkedList)
-{
-	NodePTR next = linkedList->head;
-	while(next!=NULL){
-		int* data = (int*) (next->data);
-		printf("%d ", *data);
-		next = next->next;
+	if(*one==*two){
+		return 0;
 	}
-	printf("\n");
+
+	return -1;
 }

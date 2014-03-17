@@ -35,22 +35,32 @@ int DestroyLinkedList(LinkedListPTR *linkedListHandle);
 
 int CreateNode(NodePTR* nodeHandle, void* data, NodePTR next);
 
-// Comparator returns true while dataOne is greater than dataTwo. Note: the null case MUST be implemented by comparator as well.
-// The linked list will store elements with the greatest at the head
-int SetComparatorLinkedList(LinkedListPTR linkedList, Comparator comparator);
-
-// For CSC190 purposes, the default comparator assumes data members are integers
-// Return TRUE if dataOne is greater than dataTwo
-int DefaultComparator(void* dataOne, void* dataTwo);
-
 // Appends to the end of the linked list
 int AppendLinkedList(LinkedListPTR linkedList, void *data);
 
-// Inserts the linked list in a sorted order according to the comparator
+// Inserts the linked list in a sorted order according to the comparator. Inserts in order of greatest to least
+// This function assumes that the nodes are already in order
 int InsertSortedLinkedList(LinkedListPTR linkedList, void* data);
 
 // Stores the front of the linked list in data without removing it
 int PeekHead(LinkedListPTR linkedList, void **data);
 
+// CSC190 Purposes
+// Assigns node to the node in the linkedlist with data 'data' and NULL otherwise
+int FindNode(LinkedListPTR linkedList, NodePTR* nodeHandle, void* data);
+
+// CSC190 Purposes
+// Assigns *nodeHandle the address of the node that is equal to 'data' and null otherwise
+int DeleteNode(LinkedListPTR linkedList, void* data);
+
 void PrintLinkedList(LinkedListPTR linkedList);
+
+// Returns 1 if dataOne is greater than dataTwo or dataTwo is null
+// Returns 0 if dataOne is equal to dataTwo
+// Returns -1 if dataOne is less than dataTwo
+int SetComparatorLinkedList(LinkedListPTR linkedList, Comparator comparator);
+
+// For CSC190 purposes, the default comparator assumes data members are integers
+int DefaultComparator(void* dataOne, void* dataTwo);
+
 
