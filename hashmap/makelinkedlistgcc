@@ -1,4 +1,0 @@
-gcc -std=c99 -c -g -pedantic -Wall -Werror -Wconversion linkedlist.c -o linkedlist.o
-gcc -std=c99 -c -g -pedantic -Wall -Werror -Wconversion linkedListTester.c -o linkedListTester.o
-gcc linkedlist.o linkedListTester.o -o tester
-

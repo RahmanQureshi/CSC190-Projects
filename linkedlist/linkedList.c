@@ -14,6 +14,7 @@ int CreateLinkedList(LinkedListPTR *linkedListHandle)
 	mLinkedList->size = 0;
 
 	SetComparatorLinkedList(mLinkedList, DefaultComparator);
+	SetPrinterLinkedList(mLinkedList, DefaultPrinter);
 
 	*linkedListHandle = mLinkedList;
 
@@ -254,10 +255,12 @@ int PrintLinkedList(LinkedListPTR linkedList)
 		return EMPTY_LIST;
 	}
 
+	Printer printer = linkedList->printer;
+
 	NodePTR next = linkedList->head;
 	while(next!=NULL){
-		int* data = (int*) (next->data);
-		printf("%d ", *data);
+		printer(next->data);
+		printf(" ");
 		next = next->next;
 	}
 	printf("\n");
@@ -271,6 +274,16 @@ int SetComparatorLinkedList(LinkedListPTR linkedList, Comparator comparator)
 		return ERROR;
 	}
 	linkedList->comparator = comparator;
+	return OK;
+}
+
+int SetPrinterLinkedList(LinkedListPTR linkedList, Printer printer)
+{
+	if(linkedList == NULL){
+		printf("LinkedList pointer is NULL\n");
+		return ERROR;
+	}
+	linkedList->printer = printer;
 	return OK;
 }
 
@@ -298,4 +311,9 @@ int DefaultComparator(void* dataOne, void* dataTwo)
 	}
 
 	return -1;
+}
+
+void DefaultPrinter(void* data)
+{
+	printf("%d", *((int*)data));
 }

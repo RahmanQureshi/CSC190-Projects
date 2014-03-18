@@ -15,12 +15,15 @@ typedef Node *NodePTR;
 
 typedef int (*Comparator)(void* dataOne, void* dataTwo);
 
+typedef void (*Printer)(void* data);
+
 struct node {
 	void* data;
 	NodePTR next;
 };
 
 typedef struct {
+	Printer printer;
 	Comparator comparator;
 	NodePTR head;
 	unsigned int size;
@@ -69,5 +72,9 @@ int PrintLinkedList(LinkedListPTR linkedList);
 // Returns -1 if dataOne is less than dataTwo
 int SetComparatorLinkedList(LinkedListPTR linkedList, Comparator comparator);
 
+int SetPrinterLinkedList(LinkedListPTR linkedList, Printer printer);
+
 // For CSC190 purposes, the default comparator assumes data members are integers
 int DefaultComparator(void* dataOne, void* dataTwo);
+
+void DefaultPrinter(void* data);

@@ -1,5 +1,0 @@
-clang -c -pedantic -Wall -Werror -Wconversion hashtable.c -o hashtable.o
-clang -c -pedantic -Wall -Werror -Wconversion tester.c -o tester.o
-clang -c -pedantic -Wall -Werror -Wconversion linkedlist.c -o linkedlist.o
-clang -c -pedantic -Wall -Werror -Wconversion vector.c -o vector.o
-clang tester.o hashtable.o linkedlist.o -o tester
