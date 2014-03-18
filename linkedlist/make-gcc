@@ -1,3 +1,5 @@
-gcc -std=c99 -g -c -Wall -Werror -Wconversion -pedantic linkedList.c -o linkedList.o
-gcc -std=c99 -g -c -Wall -Werror -Wconversion -pedantic linkedListTester.c -o linkedListTester.o
-gcc -std=c99 -g -Wall -Werror -Wconversion -pedantic linkedList.o linkedListTester.o -o linkedListTester
+gcc -std=c99 -g -c -Wall -Werror -Wconversion -pedantic LinkedList.c -o LinkedList.o
+gcc -std=c99 -g -c -Wall -Werror -Wconversion -pedantic LinkedListAutoTester.c -o LinkedListAutoTester.o
+gcc -std=c99 -g -c -Wall -Werror -Wconversion -pedantic LinkedListManualTester.c -o LinkedListManualTester.o
+gcc -std=c99 -g -Wall -Werror -Wconversion -pedantic LinkedList.o LinkedListAutoTester.o -o LinkedListAutoTester
+gcc -std=c99 -g -Wall -Werror -Wconversion -pedantic LinkedList.o LinkedListManualTester.o -o LinkedListManualTester

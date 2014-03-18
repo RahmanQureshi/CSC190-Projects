@@ -2,6 +2,13 @@
 #include <string.h>
 #include <stdio.h>
 
+#define FATAL_ERROR -1
+#define ERROR 1
+#define OK 0
+#define NOT_FOUND 2
+#define FOUND 3
+#define EMPTY_LIST 4
+
 typedef struct node Node;
 
 typedef Node *NodePTR;
@@ -35,7 +42,7 @@ int DestroyLinkedList(LinkedListPTR *linkedListHandle);
 
 int CreateNode(NodePTR* nodeHandle, void* data, NodePTR next);
 
-// Appends to the end of the linked list
+// Appends to the front of the linked list
 int AppendLinkedList(LinkedListPTR linkedList, void *data);
 
 // Inserts the linked list in a sorted order according to the comparator. Inserts in order of greatest to least
@@ -53,6 +60,8 @@ int FindNode(LinkedListPTR linkedList, NodePTR* nodeHandle, void* data);
 // Assigns *nodeHandle the address of the node that is equal to 'data' and null otherwise
 int DeleteNode(LinkedListPTR linkedList, void* data);
 
+// Note: assumes that data is integers
+// TODO: Generalize
 int PrintLinkedList(LinkedListPTR linkedList);
 
 // Returns 1 if dataOne is greater than dataTwo or dataTwo is null
