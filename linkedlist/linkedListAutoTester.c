@@ -30,7 +30,7 @@ int main()
 	fprintf(stderr, "Finding node with number %d: [%d]\n", *one, FindNode(mLinkedList, &mNode, (void*)one));
 	fprintf(stderr, "Checking node data; has %d\n", *((int*)(mNode->data)));
 
-	fprintf(stderr, "Deleting node with number %d: [%d]\n", *one, DeleteNode(mLinkedList, (void*)zero));
+	fprintf(stderr, "Deleting node with number %d: [%d]\n", *one, DeleteNode(mLinkedList, (void*)one));
 
 	fprintf(stderr, "Printing: ");
 	PrintLinkedList(mLinkedList);
