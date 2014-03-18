@@ -35,6 +35,14 @@ int main()
 	fprintf(stderr, "Printing: ");
 	PrintLinkedList(mLinkedList);
 
+	void *data;
+	fprintf(stderr, "Popping head: [%d]\n", pop(mLinkedList, &data));
+	fprintf(stderr, "Received: %d\n", *((int*)data));
+	free(data);
+
+	fprintf(stderr, "Printing: ");
+	PrintLinkedList(mLinkedList);
+
 	fprintf(stderr, "Destroying nodes and data: [%d]\n", DestroyNodesAndDataLinkedList(mLinkedList));
 
 	fprintf(stderr, "Destroy linked list: [%d]\n", DestroyLinkedList(&mLinkedList));

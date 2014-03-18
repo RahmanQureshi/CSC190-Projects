@@ -173,8 +173,27 @@ int PeekHead(LinkedListPTR linkedList, void **data)
 		printf("LinkedList pointer is NULL\n");
 		return ERROR;
 	}
-	Node* head = linkedList->head;
+	NodePTR head = linkedList->head;
 	*data = head->data;
+	return OK;
+}
+
+int pop(LinkedListPTR linkedList, void **dataHandle)
+{
+	if(linkedList==NULL){
+		printf("LinkedList pointer is NULL\n");
+		return ERROR;
+	}
+	NodePTR head = linkedList->head;
+
+	linkedList->head = head->next;
+
+	*dataHandle = head->data;
+	
+	free(head);
+
+	linkedList->size = linkedList->size - 1;
+	
 	return OK;
 }
 
@@ -187,6 +206,7 @@ int FindNode(LinkedListPTR linkedList, NodePTR* nodeHandle, void* data)
 
 	Comparator comparator = linkedList->comparator;
 	NodePTR next = linkedList->head;
+
 	while(next!=NULL){
 		if(comparator(data, next->data)==0){
 			*nodeHandle = next;
@@ -208,7 +228,7 @@ int DeleteNode(LinkedListPTR linkedList, void* data)
 	NodePTR curNode = linkedList->head;
 
 	if(curNode==NULL){ // If the list is empty
-		return NOT_FOUND; // Not found
+		return EMPTY_LIST;
 	}
 
 	Comparator comparator = linkedList->comparator;
