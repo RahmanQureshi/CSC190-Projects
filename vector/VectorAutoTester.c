@@ -1,32 +1,28 @@
-#include "vector.h"
+#include "Vector.h"
 
-#define INITIAL_SIZE 100
+#define INITIAL_SIZE 0
 
 int main()
 {
 	VectorPTR mVector;
 
-	fprintf(stderr, "Creating Vector\n");
-	CreateVector(&mVector, 100);
+	fprintf(stderr, "Creating Vector initial size of INITIAL_SIZE: [%d]\n", CreateVector(&mVector, INITIAL_SIZE));
 
-	fprintf(stderr, "Inserting into Vector\n");
-	int* one = malloc(sizeof(int)); 
-	*one = 5;
-	InsertVector(mVector, (void*)one );
+	fprintf(stderr, "Printing:");
+	PrintVector(mVector);
 
-	int* two = malloc(sizeof(int));
-	*two = 10;
-	InsertVector(mVector, (void*)two );
+	fprintf(stderr, "Inserting numbers 0 to 99\n");
+	int i;
+	for(i=0; i<100; i++){
+		int* j = malloc(sizeof(int));
+		*j = i;
+		AppendVector(mVector, (void*)j);
+	}
 
-	int* getZero;
-	GetIndexVector(mVector, 0, (void**)&getZero);
-	printf("Received: %d\n", *getZero);
-	int* getOne;
-	GetIndexVector(mVector, 1, (void**)&getOne);
-	printf("Received: %d\n", *getOne);
+	fprintf(stderr, "Printing:");
+	PrintVector(mVector);
 
-	fprintf(stderr, "Destroying Vector\n");
-	DestroyVector(&mVector);
+	fprintf(stderr, "Destroying Vector: [%d]\n", DestroyVector(&mVector));
 
 	return 0;
 }

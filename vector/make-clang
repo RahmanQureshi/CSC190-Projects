@@ -1,3 +1,3 @@
-clang -std=c99 -c -g -pedantic -Wall -Werror -Wconversion vector.c -o vector.o
-clang -std=c99 -c -g -pedantic -Wall -Werror -Wconversion VectorAutoTester -o VectorAutoTester.o
-clang vector.o VectorAutoTester.o -o VectorAutoTester
+clang -std=c99 -g -pedantic -Wall -Werror -Wconversion -c Vector.c -o Vector.o
+clang -std=c99 -g -pedantic -Wall -Werror -Wconversion -c VectorAutoTester.c -o VectorAutoTester.o
+clang Vector.o VectorAutoTester.o -o VectorAutoTester
