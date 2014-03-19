@@ -22,11 +22,21 @@ int main()
 	fprintf(stderr, "Printing:");
 	PrintVector(mVector);
 
+	int *get;
+	fprintf(stderr, "Getting index 31: %d\n", GetIndexVector(mVector, 31, (void**)&get));
+	fprintf(stderr, "Received: %d\n", *get);
+
 	fprintf(stderr, "Removing index 0:\n");
 	DeleteIndexVector(mVector, 0);
 
 	fprintf(stderr, "Removing last index:\n");
 	DeleteIndexVector(mVector, mVector->numElements-1);
+
+	fprintf(stderr, "Removing index 47:\n");
+	DeleteIndexVector(mVector, 47);
+
+	int j = 77;
+	fprintf(stderr, "Vector contains number 77? %d:\n", ContainsVector(mVector, (void*)&j));
 
 	fprintf(stderr, "Printing:");
 	PrintVector(mVector);

@@ -1,10 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "linkedlist.h"
-#include "vector.h"
-
-#define offset sizeof(sentinel)
+#include "LinkedList.h"
+#include "Vector.h"
 
 typedef struct
 {

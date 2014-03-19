@@ -31,9 +31,7 @@ int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize )
 	int i;
 	for(i=0; i<initialSize; i++){
 		LinkedListPTR linkedList;
-		fprintf(stderr, "Creating LinkedList\n");
 		CreateLinkedList(&linkedList);
-		fprintf(stderr, "Storing LinkedList\n");
 
 		// TODO: PRETIFY (NOT 'BEST' WAY RIGHT NOW)
 		*(((LinkedListPTR*)(((int*)(mHashTablePTR->buckets)) + OFFSET)) + i) = linkedList;
@@ -41,14 +39,11 @@ int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize )
 
 	fprintf(stderr, "Setting size\n");
 
-	// Set sizes
+	// Set size
 	mHashTablePTR->numBuckets = initialSize;
 
-	fprintf(stderr, "Setting handle\n");
 
-	// Set handle
-	// fprintf(stderr, "Address of Hashtable: %p\n", (void*) mHashTablePTR); DEBUG
-
+	// Set Handle
 	*hashTableHandle = mHashTablePTR;
 
 	return 0;

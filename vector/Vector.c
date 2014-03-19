@@ -127,17 +127,24 @@ int DeleteIndexVector(VectorPTR vector, unsigned int index)
 
 	Element *data = vector->data;
 
+	// Retrieve element and delete
 	Element element = *(data + index);
 
 	if(element==NULL){
-		printf("DeleteIndexVector: Data pointer is set to null, deleting element\n");
+		printf("DeleteIndexVector: Data pointer is set to null\n");
 	}else{
 		free(element);
 		element = NULL;
 	}
 
-	// Shift everything ahead of indx down one
-	memcpy(data+index, data+index+1, ( (vector->numElements - (index+1)) ) * sizeof(void*) );
+	// Shift everything ahead of index down one
+	// The last element is doubled but that does not matter
+	int i;
+	int numElements = (int) vector->numElements;
+	for(i=(int)(index+1); i<numElements; i++){
+		*(data+i-1) = *(data+i);
+	}
+
 
 	vector->numElements = vector->numElements - 1;
 
@@ -235,7 +242,7 @@ int ContainsVector(VectorPTR vector, void* data)
 	int i;
 	unsigned int size = vector->numElements;
 	for(i=0; i<size; i++){
-		if(comparator(data, vector->data + i)==0){
+		if(comparator(data, *(vector->data +i))==0){
 			return 1;
 		}
 	}
