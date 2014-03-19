@@ -17,6 +17,7 @@ int CreateVector(VectorPTR *vectorHandle, unsigned int initialSize)
 	newVector->numElements = 0;
 
 	SetPrinterVector(newVector, DefaultPrinter);
+	SetComparatorVector(newVector, DefaultComparator);
 
 	*vectorHandle = newVector;
 
@@ -48,11 +49,12 @@ int DestroyVector(VectorPTR *vectorHandle)
 			printf("Data pointer set to null, unable to free\n");
 		}else{
 			free(dataPiece);
+			dataPiece = NULL;
 		}
 	}
 	free(data);
 	free(vector);
-	return 0;
+	return OK;
 }
 
 int AppendVector(VectorPTR vector, Element element)
@@ -131,7 +133,14 @@ int DeleteIndexVector(VectorPTR vector, unsigned int index)
 		printf("DeleteIndexVector: Data pointer is set to null, deleting element\n");
 	}else{
 		free(element);
+		element = NULL;
 	}
+
+	// Shift everything ahead of indx down one
+	memcpy(data+index, data+index+1, ( (vector->numElements - (index+1)) ) * sizeof(void*) );
+
+	vector->numElements = vector->numElements - 1;
+
 	return OK;
 
 }
@@ -183,4 +192,52 @@ int SetPrinterVector(VectorPTR vector, Printer printer)
 	}
 	vector->printer = printer;
 	return OK;
+}
+
+int SetComparatorVector(VectorPTR vector, Comparator comparator)
+{
+	if(comparator==NULL){
+		printf("Function pointer to comparator is NULL");
+		return ERROR;
+	}
+	vector->comparator = comparator;
+	return OK;
+}
+
+int DefaultComparator(void* dataOne, void* dataTwo)
+{
+	int* one = (int*) dataOne;
+	int* two = (int*) dataTwo;
+
+	if(two==NULL || *one>*two){
+		return 1;
+	}
+
+	if(*one==*two){
+		return 0;
+	}
+
+	return -1;
+}
+
+int ContainsVector(VectorPTR vector, void* data)
+{
+	if(vector==NULL){
+		printf("Vector pointer is null\n");
+		return ERROR;
+	}
+	Comparator comparator = vector->comparator;
+	if(comparator==NULL){
+		printf("Vector comparator is not set\n");
+		return ERROR;
+	}
+
+	int i;
+	unsigned int size = vector->numElements;
+	for(i=0; i<size; i++){
+		if(comparator(data, vector->data + i)==0){
+			return 1;
+		}
+	}
+	return 0;
 }

@@ -22,6 +22,15 @@ int main()
 	fprintf(stderr, "Printing:");
 	PrintVector(mVector);
 
+	fprintf(stderr, "Removing index 0:\n");
+	DeleteIndexVector(mVector, 0);
+
+	fprintf(stderr, "Removing last index:\n");
+	DeleteIndexVector(mVector, mVector->numElements-1);
+
+	fprintf(stderr, "Printing:");
+	PrintVector(mVector);
+
 	fprintf(stderr, "Destroying Vector: [%d]\n", DestroyVector(&mVector));
 
 	return 0;
