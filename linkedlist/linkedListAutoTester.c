@@ -17,28 +17,10 @@ int main()
 
 	fprintf(stderr, "Inserting into list: [%d]\n", InsertSortedLinkedList(mLinkedList, (void*)two));
 
-	int* head;
 
-	fprintf(stderr, "Peeking the head: [%d]\n", PeekHead(mLinkedList, (void**)&head));
-
-	fprintf(stderr, "Saw: [%d]\n", *head);
-
-	fprintf(stderr, "Printing: ");
-	PrintLinkedList(mLinkedList);
-
-	NodePTR mNode;
-	fprintf(stderr, "Finding node with number %d: [%d]\n", *one, FindNode(mLinkedList, &mNode, (void*)one));
-	fprintf(stderr, "Checking node data; has %d\n", *((int*)(mNode->data)));
-
-	fprintf(stderr, "Deleting node with number %d: [%d]\n", *one, DeleteNode(mLinkedList, (void*)one));
-
-	fprintf(stderr, "Printing: ");
-	PrintLinkedList(mLinkedList);
-
-	void *data;
-	fprintf(stderr, "Popping head: [%d]\n", pop(mLinkedList, &data));
-	fprintf(stderr, "Received: %d\n", *((int*)data));
-	free(data);
+	int i = 100;
+	fprintf(stderr, "Deleting node with number %d: [%d]\n", i, DeleteNode(mLinkedList, (void*)&i));
+	// ERROR WAS HERE: FIRST DELETED NODE, THEN TRIED TO READ AND DISPLAY! URGH. 
 
 	fprintf(stderr, "Printing: ");
 	PrintLinkedList(mLinkedList);

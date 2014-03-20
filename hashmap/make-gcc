@@ -1,6 +1,7 @@
 gcc -std=c99 -g -c -pedantic -Wall -Werror -Wconversion hashtable.c -o hashtable.o
 gcc -std=c99 -g -c -pedantic -Wall -Werror -Wconversion LinkedList.c -o LinkedList.o
 gcc -std=c99 -g -c -pedantic -Wall -Werror -Wconversion Vector.c -o Vector.o
+gcc -std=c99 -g -c -pedantic -Wall -Werror -Wconversion HashTableAutoTester.c -o HashTableAutoTester.o
 
-gcc hashtable.o LinkedList.o Vector.o -o HashTableAutoTester
+gcc hashtable.o LinkedList.o Vector.o HashTableAutoTester.o -o HashTableAutoTester
 

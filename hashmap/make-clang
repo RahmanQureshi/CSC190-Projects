@@ -1,5 +1,7 @@
-clang -c -pedantic -Wall -Werror -Wconversion hashtable.c -o hashtable.o
-clang -c -pedantic -Wall -Werror -Wconversion LinkedList.c -o LinkedList.o
-clang -c -pedantic -Wall -Werror -Wconversion Vector.c -o Vector.o
+clang -std=c99 -g -c -pedantic -Wall -Werror -Wconversion hashtable.c -o hashtable.o
+clang -std=c99 -g -c -pedantic -Wall -Werror -Wconversion LinkedList.c -o LinkedList.o
+clang -std=c99 -g -c -pedantic -Wall -Werror -Wconversion Vector.c -o Vector.o
+clang -std=c99 -g -c -pedantic -Wall -Werror -Wconversion HashTableAutoTester.c -o HashTableAutoTester.o
 
-clang hashtable.o LinkedList.o Vector.o -o HashTableAutoTester
+clang hashtable.o LinkedList.o Vector.o HashTableAutoTester.o -o HashTableAutoTester
+

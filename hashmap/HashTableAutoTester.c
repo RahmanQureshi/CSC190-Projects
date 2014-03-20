@@ -1,5 +1,4 @@
 #include "hashtable.h"
-//#include "linkedlist.h"
 
 #define OK 0
 #define FATAL_ERROR -1
@@ -15,6 +14,13 @@ int main()
 	HashTablePTR mHashTable = NULL;
 	fprintf(stderr, "Creating HashTable\n");
 	CreateHashTable(&mHashTable, INITIAL_SIZE);
+
+	int* mPrevData;
+	int* mData = malloc(sizeof(int)); *mData = 25;
+	char* mKey = "hello";
+
+	fprintf(stderr, "Inserting data [%d]\n", *mData);
+	InsertEntry(mHashTable, mKey, (void*)mData, (void**)&mPrevData);
 
 	fprintf(stderr, "Destroying HashTable\n");
 	DestroyHashTable(&mHashTable);

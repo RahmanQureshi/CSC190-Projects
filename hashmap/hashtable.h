@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "LinkedList.h"
 #include "Vector.h"
+#include "LinkedList.h"
 
 typedef struct
 {
@@ -35,3 +35,4 @@ int containsKey(char* key, VectorPTR keys);
 
 int checkSentinel(HashTablePTR hashTable, int sentinel);
 
+int StringComparatorHashTable(void* dataOne, void* dataTwo);

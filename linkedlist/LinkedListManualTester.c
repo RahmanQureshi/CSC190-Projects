@@ -18,7 +18,7 @@ int main()
 			printf("Item: ");
 			int *i = malloc(sizeof(int));
 			scanf("%d", i);
-			AppendLinkedList(mLinkedList, (void*)i );
+			InsertSortedLinkedList(mLinkedList, (void*)i );
 
 		}else if(!strcmp(input, "print")){
 

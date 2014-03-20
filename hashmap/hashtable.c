@@ -1,4 +1,5 @@
 #include "hashtable.h"
+#include "string.h"
 
 #define SENTINEL 0xDEADBEEF
 #define OFFSET 1 //One integer
@@ -20,6 +21,7 @@ int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize )
 	}
 
 	CreateVector(&(mHashTablePTR->keys), initialSize);
+	SetComparatorVector(mHashTablePTR->keys, StringComparatorHashTable);
 
 	// Set sentinel
 	mHashTablePTR->sentinel = (int) SENTINEL;
@@ -54,17 +56,19 @@ int DestroyHashTable( HashTablePTR *hashTableHandle )
 	if(hashTableHandle == NULL || *hashTableHandle == NULL){
 		return -1;
 	}
+
 	HashTablePTR mHashTablePTR = *hashTableHandle;
 	LinkedListPTR *buckets = mHashTablePTR->buckets;
 	VectorPTR keys = mHashTablePTR->keys;
 
 	unsigned int numBuckets = mHashTablePTR->numBuckets;
 
-	// Free data values
+	// Free LinkedLists
 	if(buckets!=NULL){
 		int i;
 		for(i=0; i<numBuckets; i++){
 			LinkedListPTR linkedList = *(((LinkedListPTR*)((((int*)(buckets)) + OFFSET))) + i);
+			DestroyNodesAndDataLinkedList(linkedList);
 			DestroyLinkedList(&linkedList);
 		}
 	}
@@ -75,7 +79,6 @@ int DestroyHashTable( HashTablePTR *hashTableHandle )
 	// Free hashtable and buckets
 	free(buckets);
 	free(mHashTablePTR);
-
 
 	return 0;
 }
@@ -93,27 +96,23 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 
 	fprintf(stderr, "Copying keys\n");
 	// Copy key
-	char* hashKey = (char*) malloc(sizeof(char) * strlen(key));
+	char* hashKey = (char*) malloc(sizeof(char) * strlen(key) + 1); // + 1 for terminator
 	strcpy(hashKey, key);
 
 	// Retrieve hash code
 	int hashCode = getHashCode(hashKey, hashTable->numBuckets);
 
 	fprintf(stderr, "Retrieving linkedlist at hashCode\n");
+	
 	// Retrieve the list at hashCode
 	LinkedListPTR linkedList = *((LinkedListPTR*)((int*)(buckets) + OFFSET) + hashCode);
 	unsigned int listSize = linkedList->size;
 
 	fprintf(stderr, "Checking key\n");
 	// Add the key
-	if(!containsKey(hashKey, keys)) // TODO: MODIFY TO WORK WITH A VECTOR
-	{
-		fprintf(stderr, "Appending key\n"); //DEBUG
-		*(keys + listSize) = hashKey;
-		hashTable->numKeys = hashTable->numKeys + 1;
-		flag = 1;
-	}else{
-		fprintf(stderr, "Key already set\n");
+	if(!ContainsVector(keys, (void*) hashKey)){
+		printf("Key not found, inserting now");
+		AppendVector(keys, (void*)hashKey);
 	}
 
 	fprintf(stderr, "Checking previous data\n");
@@ -123,26 +122,15 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 		*previousDataHandle = NULL;
 	}else{
 		fprintf(stderr, "Setting previous data\n");
-		peekHead(linkedList, previousDataHandle);
+		PeekHead(linkedList, previousDataHandle);
 		flag = 2;
 	}
 
-	fprintf(stderr, "Storing");
+	fprintf(stderr, "Storing\n");
 	// Store in the data in the linkedlist
-	insertEntryLinkedList(linkedList, data);
+	AppendLinkedList(linkedList, data);
 
 	return flag;
-}
-
-int containsKey(char* key, VectorPTR keys)
-{
-	int i;
-	for(i=0; i<size; i++){
-		if(!strcmp(key, keys[i])){
-			return 1;
-		}
-	}
-	return 0;
 }
 
 int getHashCode(char* key, unsigned int range)
@@ -156,4 +144,12 @@ int checkSentinel(HashTablePTR hashTable, int sentinel)
 		return 1;
 	}
 	return 0;
+}
+
+int StringComparatorHashTable(void* dataOne, void* dataTwo)
+{
+	char* stringOne = (char*) dataOne;
+	char* stringTwo = (char*) dataTwo;
+
+	return strcmp(stringOne, stringTwo);
 }
