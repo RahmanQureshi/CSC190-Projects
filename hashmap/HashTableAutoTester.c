@@ -16,67 +16,31 @@ int main()
 	fprintf(stderr, "Creating HashTable\n");
 	CreateHashTable(&mHashTable, INITIAL_SIZE);
 
-	int* mPrevData;
-	int* mData = malloc(sizeof(int)); *mData = 25;
-	char* mKeyOne = "hello";
+	char* keyArray[11] = {"a","b","c","d","e","f","g","h","i","j","a"};
+	int dataArray[11] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
-	fprintf(stderr, "Inserting data [%d] at [%s] : [%d]\n", *mData, mKeyOne, InsertEntry(mHashTable, mKeyOne, (void*)mData, (void**)&mPrevData));
-
-	if(mPrevData==NULL){
-		printf("No previous data\n");
-	}else{
-		printf("Previous data: %d", *mPrevData);
+	int i;
+	for(i=0; i<11; i++){
+		char* key = keyArray[i];
+		int data = dataArray[i];
+		void* previousData;
+		fprintf(stderr, "Inserting entry: [%d]\n", InsertEntry(mHashTable, key, (void**)&data, &previousData) );
+		if(!(previousData==NULL)){
+			fprintf(stderr, "Previous data: %d\n", *((int*)previousData));
+			previousData = NULL;
+		}
 	}
-	mPrevData = NULL;
 
-	char* mKeyTwo = "hello";
-	int* mDataTwo = malloc(sizeof(int)); *mDataTwo = 35;
-	
-	fprintf(stderr, "Inserting data [%d] at [%s] : [%d]\n", *mDataTwo, mKeyTwo, InsertEntry(mHashTable, mKeyTwo, (void*)mDataTwo, (void**)&mPrevData));
-
-	if(mPrevData==NULL){
-		printf("No previous data\n");
-	}else{
-		printf("Previous data: %d; freeing now\n", *mPrevData);
-		free(mPrevData);
+	char **hashKeysArray;
+	unsigned int keyCount;
+	fprintf(stderr, "Retrieving keys: [%d]\n", GetKeys(mHashTable, &hashKeysArray, &keyCount));
+	fprintf(stderr, "Number of keys: %d\n", keyCount);
+	fprintf(stderr, "Keys: ");
+	for(i=0; i<keyCount; i++){
+		fprintf(stderr, "%s", *(hashKeysArray+i));
+		free(*(hashKeysArray+i));
 	}
-	mPrevData = NULL;
-
-	fprintf(stderr, "Retrieving entry at %s: [%d]\n", mKeyTwo, FindEntry( mHashTable, mKeyTwo, (void**)&mPrevData) );
-	fprintf(stderr, "Retrieved: %d\n", *mPrevData);
-	mPrevData = NULL;
-
-	int* mDataThree = malloc(sizeof(int)); *mDataThree = 50;
-	char* mKeyThree = "hello";
-	fprintf(stderr, "Inserting data [%d] at [%s] : [%d]\n", *mDataThree, mKeyThree, InsertEntry(mHashTable, mKeyThree, (void*)mDataThree, (void**)&mPrevData));
-
-	if(mPrevData==NULL){
-		printf("No previous data\n");
-	}else{
-		printf("Previous data: %d; freeing now\n", *mPrevData);
-		free(mPrevData);
-	}
-	mPrevData = NULL;
-
-	char **keysArray;
-	unsigned int numKeys;
-	fprintf(stderr, "Getting keys: [%d]\n", GetKeys(mHashTable, &keysArray, &numKeys) );
-	int z;
-	for(z=0; z<numKeys; z++){
-		printf("Key: %s\n", *(keysArray+z));
-		free(*(keysArray+z));
-	}
-	free(keysArray);
-
-	fprintf(stderr, "Deleting entry at %s: [%d]\n", mKeyThree, DeleteEntry(mHashTable, mKeyTwo, (void**)&mPrevData));
-	fprintf(stderr, "Retrieved: %d\n", *mPrevData);
-	if(mPrevData==NULL){
-		printf("No previous data\n");
-	}else{
-		printf("Previous data: %d; freeing now\n", *mPrevData);
-		free(mPrevData);
-	}
-	mPrevData = NULL;
+	free(hashKeysArray);
 
 	fprintf(stderr, "Destroying HashTable\n");
 	DestroyHashTable(&mHashTable);

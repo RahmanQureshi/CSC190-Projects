@@ -219,7 +219,6 @@ int FindNode(LinkedListPTR linkedList, NodePTR* nodeHandle, void* data)
 
 	while(next!=NULL){
 		if(comparator(data, next->data)==0){
-			printf("Node found\n");
 			*nodeHandle = next;
 			return FOUND; // Found and assigned
 		}

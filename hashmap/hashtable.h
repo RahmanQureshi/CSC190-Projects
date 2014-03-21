@@ -50,3 +50,5 @@ int SetBucketHashTable(HashTablePTR hashTable, LinkedListPTR linkedList, int ind
 int StringComparatorHashTable(void* dataOne, void* dataTwo);
 
 int DataDeleterHashTable(void* data);
+
+int isValidHashTable(HashTablePTR hashTable);
