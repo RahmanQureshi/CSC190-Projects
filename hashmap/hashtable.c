@@ -6,8 +6,6 @@
 
 int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize )
 {
-	// Assume initialSize > 0
-
 	// Create the Hashtable
 	HashTablePTR mHashTablePTR = (HashTablePTR) malloc(sizeof(HashTableObject));
 	if(mHashTablePTR == NULL){
@@ -20,30 +18,23 @@ int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize )
 		return -1;
 	}
 
-	CreateVector(&(mHashTablePTR->keys), initialSize);
-	SetComparatorVector(mHashTablePTR->keys, StringComparatorHashTable);
-
 	// Set sentinel
 	mHashTablePTR->sentinel = (int) SENTINEL;
 	memcpy(mHashTablePTR->buckets, &(mHashTablePTR->sentinel), sizeof(int)); //Set Sentinal
 
-	fprintf(stderr, "Initializing buckets\n");
-
-	// Initialize storage array
+	// Create linked list for each bucket
 	int i;
 	for(i=0; i<initialSize; i++){
 		LinkedListPTR linkedList;
 		CreateLinkedList(&linkedList);
-
-		// TODO: PRETIFY (NOT 'BEST' WAY RIGHT NOW)
-		*(((LinkedListPTR*)(((int*)(mHashTablePTR->buckets)) + OFFSET)) + i) = linkedList;
+		SetComparatorLinkedList(linkedList, StringComparatorHashTable);
+		SetDataDeleterLinkedList(linkedList, DataDeleterHashTable);
+		SetBucketHashTable(mHashTablePTR, linkedList, i);
 	}
-
-	fprintf(stderr, "Setting size\n");
 
 	// Set size
 	mHashTablePTR->numBuckets = initialSize;
-
+	mHashTablePTR->numKeys = 0;
 
 	// Set Handle
 	*hashTableHandle = mHashTablePTR;
@@ -59,7 +50,6 @@ int DestroyHashTable( HashTablePTR *hashTableHandle )
 
 	HashTablePTR mHashTablePTR = *hashTableHandle;
 	LinkedListPTR *buckets = mHashTablePTR->buckets;
-	VectorPTR keys = mHashTablePTR->keys;
 
 	unsigned int numBuckets = mHashTablePTR->numBuckets;
 
@@ -67,14 +57,12 @@ int DestroyHashTable( HashTablePTR *hashTableHandle )
 	if(buckets!=NULL){
 		int i;
 		for(i=0; i<numBuckets; i++){
-			LinkedListPTR linkedList = *(((LinkedListPTR*)((((int*)(buckets)) + OFFSET))) + i);
+			LinkedListPTR linkedList;
+			GetBucketHashTable(mHashTablePTR, &linkedList, i);
 			DestroyNodesAndDataLinkedList(linkedList);
 			DestroyLinkedList(&linkedList);
 		}
 	}
-
-	// Free keys
-	DestroyVector(&keys);
 
 	// Free hashtable and buckets
 	free(buckets);
@@ -85,52 +73,148 @@ int DestroyHashTable( HashTablePTR *hashTableHandle )
 
 int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousDataHandle )
 {
-	if(!checkSentinel(hashTable, (int) ( (int*)(hashTable->buckets) )[0])){ // If the sentinel is not the first four bytes of buckets array
+	if(hashTable==NULL || !checkSentinel(hashTable)){
 		return -1;
 	}
 
-	int flag = 0; // 0 indicates success with no collisions
-
-	LinkedListPTR *buckets = hashTable->buckets;
-	VectorPTR keys = hashTable -> keys;
-
-	fprintf(stderr, "Copying keys\n");
-	// Copy key
-	char* hashKey = (char*) malloc(sizeof(char) * strlen(key) + 1); // + 1 for terminator
+	// Copy the key
+	char* hashKey = (char*) malloc(sizeof(char) * strlen(key) + 1);
 	strcpy(hashKey, key);
 
-	// Retrieve hash code
+	// Get hashCode
 	int hashCode = getHashCode(hashKey, hashTable->numBuckets);
 
-	fprintf(stderr, "Retrieving linkedlist at hashCode\n");
-	
-	// Retrieve the list at hashCode
-	LinkedListPTR linkedList = *((LinkedListPTR*)((int*)(buckets) + OFFSET) + hashCode);
-	unsigned int listSize = linkedList->size;
+	// Insert the key:data pair in the element
+		// Get the linked list at hashCode
+		// If the list is empty, insert and return 0
+		// If the linkedlist contains the key already, overwrite its data and return 2
+		// Otherwise append and return 1
 
-	fprintf(stderr, "Checking key\n");
-	// Add the key
-	if(!ContainsVector(keys, (void*) hashKey)){
-		printf("Key not found, inserting now");
-		AppendVector(keys, (void*)hashKey);
-	}
+	LinkedListPTR linkedList;
+	GetBucketHashTable(hashTable, &linkedList, hashCode);
+	NodePTR mNode; // Handle for previous data, if it exists
+	KVP_PTR kvp = malloc(sizeof(KVP));
+	kvp->key = (void*) hashKey;
+	kvp->value = data;
 
-	fprintf(stderr, "Checking previous data\n");
-	// If the linkedList contains nothing, there is no previous data, otherwise set the previous data
-	if(listSize==0){
-		fprintf(stderr, "No previous data\n");
+	if(linkedList->size==0){
+		printf("Size 0, appending\n");
+		hashTable->numKeys += 1;
+		AppendLinkedList(linkedList, (void*) kvp);
 		*previousDataHandle = NULL;
+		return 0;
+	}else if(!(FindNode(linkedList, &mNode, (void*) kvp ) == FOUND) ){ // If no node was found
+		printf("Collision, appending\n");
+		hashTable->numKeys += 1;
+		AppendLinkedList(linkedList, (void*) kvp);
+		*previousDataHandle = NULL;
+		return 1;
 	}else{
-		fprintf(stderr, "Setting previous data\n");
-		PeekHead(linkedList, previousDataHandle);
-		flag = 2;
+		printf("Found node, replacing\n");
+		*previousDataHandle = ((KVP_PTR)mNode->data)->value;
+		((KVP_PTR)mNode->data)->value = data;
+		free(hashKey); // Node was found, we do not need the hash key or new KVP anymore
+		free(kvp);
+		return 2;
+	}
+}
+
+int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle )
+{
+	if(hashTable==NULL || !checkSentinel(hashTable)){
+		return -1;
 	}
 
-	fprintf(stderr, "Storing\n");
-	// Store in the data in the linkedlist
-	AppendLinkedList(linkedList, data);
+	int hashCode = getHashCode(key, hashTable->numBuckets);
+	LinkedListPTR linkedList;
+	GetBucketHashTable(hashTable, &linkedList, hashCode);
 
-	return flag;
+	KVP_PTR compare = malloc(sizeof(KVP));
+	compare->key = key;
+
+	KVP_PTR retrieve;
+	if(DeleteNode(linkedList, compare, (void**)&retrieve) == FOUND ) {
+		hashTable->numKeys -= 1;
+		*dataHandle = retrieve->value;
+		free(retrieve->key);
+		free(retrieve);
+		free(compare);
+		return 0;
+	}else{
+		free(compare);
+		return -2;
+	}
+}
+
+int FindEntry( HashTablePTR hashTable, char *key, void **dataHandle )
+{
+	if(hashTable==NULL){
+		fprintf(stderr, "Hashtable pointer is null\n");
+		return -1;
+	}
+
+	// Get the hash code
+	int hashCode = getHashCode(key, hashTable->numBuckets);
+	LinkedListPTR bucket;
+	GetBucketHashTable(hashTable, &bucket, hashCode);
+
+	NodePTR node; //
+	KVP_PTR kvp = malloc(sizeof(KVP)); // Comparator takes kvp
+	kvp->key = key;
+
+	if(FindNode(bucket, &node, (void*)kvp)==FOUND){
+		*dataHandle = ((KVP_PTR)node->data)->value;
+		free(kvp);
+		return 0;
+	}else{
+		free(kvp);
+		return -2;
+	}
+}
+
+int GetKeys( HashTablePTR hashTable, char ***keysArrayHandle, unsigned int *keyCount )
+{
+	if(hashTable==NULL || !checkSentinel(hashTable)){
+		return -1;
+	}
+
+	int i;
+	unsigned int numKeys = (unsigned int) hashTable->numKeys;
+	int counter = 0; // Number of keys processed so far
+	char **keysArray = (char**) malloc( sizeof(char*) * (unsigned long) numKeys );
+
+	for(i=0; i<(hashTable->numBuckets); i++){
+		LinkedListPTR linkedList;
+		GetBucketHashTable(hashTable, &linkedList, i);
+		if(!(linkedList->size==0)){
+			int j;
+			for(j=0; j<(linkedList->size); j++){
+				KVP_PTR temp;
+				PeekIndex(linkedList, (void**) &temp, i);
+				char* copy = (char*) malloc(sizeof(char) * strlen(temp->key) + 1);
+				strcpy(copy, temp->key);
+				*(keysArray+counter) = copy;
+				counter += 1;
+			}
+		}
+	}
+	*keysArrayHandle = keysArray;
+	*keyCount = numKeys;
+	return 0;
+}
+
+int GetLoadFactor( HashTablePTR hashTable, float *loadFactor )
+{
+	if(hashTable==NULL || !checkSentinel(hashTable)){
+		return -1;
+	}
+	
+	float numItems = hashTable->numKeys;
+	float numBuckets = hashTable->numBuckets;
+
+	*loadFactor = numItems/numBuckets;
+
+	return 0;
 }
 
 int getHashCode(char* key, unsigned int range)
@@ -138,8 +222,9 @@ int getHashCode(char* key, unsigned int range)
 	return 0;
 }
 
-int checkSentinel(HashTablePTR hashTable, int sentinel)
+int checkSentinel(HashTablePTR hashTable)
 {
+	int sentinel = (int) (( (int*)(hashTable->buckets) )[0] );
 	if(sentinel == (int) SENTINEL) {
 		return 1;
 	}
@@ -148,8 +233,32 @@ int checkSentinel(HashTablePTR hashTable, int sentinel)
 
 int StringComparatorHashTable(void* dataOne, void* dataTwo)
 {
-	char* stringOne = (char*) dataOne;
-	char* stringTwo = (char*) dataTwo;
+	char* stringOne = (char*) ( ( (KVP_PTR)dataOne ) -> key);
+	char* stringTwo = (char*) ( ( (KVP_PTR)dataTwo ) -> key);
+
+	fprintf(stderr, "Comparing %s to %s\n", stringOne, stringTwo);
 
 	return strcmp(stringOne, stringTwo);
+}
+
+int GetBucketHashTable(HashTablePTR hashTable, LinkedListPTR* linkedList, int index)
+{
+	LinkedListPTR* buckets = hashTable->buckets;
+	*linkedList = *((LinkedListPTR*)((int*)(buckets) + OFFSET) + index);
+	return 0;
+}
+
+int SetBucketHashTable(HashTablePTR hashTable, LinkedListPTR linkedList, int index)
+{
+	LinkedListPTR* buckets = hashTable->buckets;
+	*((LinkedListPTR*)((int*)(buckets) + OFFSET) + index) = linkedList;
+	return 0;
+}
+
+int DataDeleterHashTable(void* data)
+{
+	KVP_PTR kvp = (KVP_PTR) data;
+	free(kvp->key);
+	free(kvp->value);
+	return OK;
 }

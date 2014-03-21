@@ -15,6 +15,7 @@ int CreateLinkedList(LinkedListPTR *linkedListHandle)
 
 	SetComparatorLinkedList(mLinkedList, DefaultComparatorLinkedList);
 	SetPrinterLinkedList(mLinkedList, DefaultPrinterLinkedList);
+	SetDataDeleterLinkedList(mLinkedList, DefaultDataDeleter);
 
 	*linkedListHandle = mLinkedList;
 
@@ -77,6 +78,7 @@ int DestroyNodesAndDataLinkedList(LinkedListPTR linkedList)
 		if(next->data==NULL){
 			printf("Node data set to null - modified outside of linked list\n");
 		}else{
+			(linkedList->dataDeleter)(next->data);
 			free(next->data);
 		}
 		next->data = NULL;
@@ -167,14 +169,22 @@ int InsertSortedLinkedList(LinkedListPTR linkedList, void* data)
 	return OK;
 }
 
-int PeekHead(LinkedListPTR linkedList, void **data)
+int PeekIndex(LinkedListPTR linkedList, void **data, int index)
 {
 	if(linkedList==NULL){
 		printf("LinkedList pointer is NULL\n");
 		return ERROR;
 	}
-	NodePTR head = linkedList->head;
-	*data = head->data;
+	if(index>(linkedList->size)-1){
+		printf("Out of bounds");
+		return ERROR;
+	}
+	NodePTR current = linkedList->head;
+	int i;
+	for(i=0; i<index; i++){
+		current = current->next;
+	}
+	*data = current->data;
 	return OK;
 }
 
@@ -209,6 +219,7 @@ int FindNode(LinkedListPTR linkedList, NodePTR* nodeHandle, void* data)
 
 	while(next!=NULL){
 		if(comparator(data, next->data)==0){
+			printf("Node found\n");
 			*nodeHandle = next;
 			return FOUND; // Found and assigned
 		}
@@ -218,7 +229,7 @@ int FindNode(LinkedListPTR linkedList, NodePTR* nodeHandle, void* data)
 	return NOT_FOUND; // Not found
 }
 
-int DeleteNode(LinkedListPTR linkedList, void* data)
+int DeleteNode(LinkedListPTR linkedList, void* data, void **dataHandle)
 {
 	if(linkedList==NULL){
 		printf("LinkedList pointer is NULL\n");
@@ -228,6 +239,7 @@ int DeleteNode(LinkedListPTR linkedList, void* data)
 	NodePTR curNode = linkedList->head;
 
 	if(curNode==NULL){ // If the list is empty
+		*dataHandle = NULL;
 		return EMPTY_LIST;
 	}
 
@@ -237,10 +249,11 @@ int DeleteNode(LinkedListPTR linkedList, void* data)
 	
 	if(comparator(data, curNode->data)==0){ // Check head
 		linkedList->head = curNode->next;
+
 		if(curNode->data==NULL){
 			printf("Node data set to null - modified outside of linked list\n");
 		}else{
-			free(curNode->data);
+			*dataHandle = curNode->data;
 		}
 		free(curNode);
 		curNode = NULL;
@@ -254,7 +267,7 @@ int DeleteNode(LinkedListPTR linkedList, void* data)
 			if(curNode->next->data==NULL){
 				printf("Node data set to null - modified outside of linked list\n");
 			}else{
-				free(curNode->next->data);
+				*dataHandle = curNode->next->data;
 			}
 			free(curNode->next);
 			curNode->next = temp;
@@ -264,6 +277,16 @@ int DeleteNode(LinkedListPTR linkedList, void* data)
 		curNode = curNode->next;
 	}
 	return NOT_FOUND; // Not found
+}
+
+int CreateNode(NodePTR* nodeHandle, void* data, NodePTR next)
+{
+	NodePTR new = (NodePTR) malloc(sizeof(Node));
+	if(new==NULL) return FATAL_ERROR;
+	new->data = data;
+	new->next = next;
+	*nodeHandle = new;
+	return OK;
 }
 
 int PrintLinkedList(LinkedListPTR linkedList)
@@ -308,13 +331,13 @@ int SetPrinterLinkedList(LinkedListPTR linkedList, PrinterLinkedList printer)
 	return OK;
 }
 
-int CreateNode(NodePTR* nodeHandle, void* data, NodePTR next)
+int SetDataDeleterLinkedList(LinkedListPTR linkedList, DataDeleterLinkedList dataDeleter)
 {
-	NodePTR new = (NodePTR) malloc(sizeof(Node));
-	if(new==NULL) return FATAL_ERROR;
-	new->data = data;
-	new->next = next;
-	*nodeHandle = new;
+	if(linkedList == NULL){
+		printf("LinkedList pointer is NULL\n");
+		return ERROR;
+	}
+	linkedList->dataDeleter = dataDeleter;
 	return OK;
 }
 
@@ -337,4 +360,8 @@ int DefaultComparatorLinkedList(void* dataOne, void* dataTwo)
 void DefaultPrinterLinkedList(void* data)
 {
 	printf("%d", *((int*)data));
+}
+
+int DefaultDataDeleter(void* data){
+	return OK;
 }

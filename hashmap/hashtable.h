@@ -8,10 +8,18 @@ typedef struct
 {
     int sentinel;
     unsigned int numBuckets;
-    LinkedListPTR *buckets; //buckets
-    VectorPTR keys;
+    LinkedListPTR *buckets;
+    int numKeys;
 
 } HashTableObject;
+
+typedef struct 
+{
+	void* key;
+	void* value;
+} KVP;
+
+typedef KVP *KVP_PTR;
 
 typedef HashTableObject *HashTablePTR;
 
@@ -25,14 +33,20 @@ int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle );
 
 int FindEntry( HashTablePTR hashTable, char *key, void **dataHandle );
 
-int GetKeys( HashTablePTR hashTable, char * (*keysArrayHandle)[], unsigned int *keyCount );
+int GetKeys( HashTablePTR hashTable, char ***keysArrayHandle, unsigned int *keyCount );
 
 int GetLoadFactor( HashTablePTR hashTable, float *loadFactor );
 
 int getHashCode(char* key, unsigned int range);
 
-int containsKey(char* key, VectorPTR keys);
+int GetLoadFactor( HashTablePTR hashTable, float *loadFactor );
 
-int checkSentinel(HashTablePTR hashTable, int sentinel);
+int checkSentinel(HashTablePTR hashTable);
+
+int GetBucketHashTable(HashTablePTR hashTable, LinkedListPTR* linkedList, int index);
+
+int SetBucketHashTable(HashTablePTR hashTable, LinkedListPTR linkedList, int index);
 
 int StringComparatorHashTable(void* dataOne, void* dataTwo);
+
+int DataDeleterHashTable(void* data);

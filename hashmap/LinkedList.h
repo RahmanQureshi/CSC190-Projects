@@ -19,22 +19,9 @@
 #include <string.h>
 #include <stdio.h>
 
-
-// Modified because these clashed with Vector (used in hashmap)
-// Todo: this does not seem elegant at all...
-
-#ifndef FATAL_ERROR
-	#define FATAL_ERROR -1
-#endif
-
-#ifndef ERROR
-	#define ERROR 1
-#endif
-
-#ifndef OK
-	#define OK 0
-#endif
-
+#define FATAL_ERROR -1
+#define ERROR 1
+#define OK 0
 #define NOT_FOUND 2
 #define FOUND 3
 #define EMPTY_LIST 4
@@ -43,9 +30,15 @@ typedef struct node Node;
 
 typedef Node *NodePTR;
 
+// Return 1 if dataOne>dataTwo, 0 if equal, -1 if less
 typedef int (*ComparatorLinkedList)(void* dataOne, void* dataTwo);
 
+// Prints a single element
 typedef void (*PrinterLinkedList)(void* data);
+
+// Safely delete and set to free internal members of data. The linked list will free data pointer
+// Thus if data is not a struct with internal members, setting a DataDeleter is not necessary
+typedef int (*DataDeleterLinkedList)(void* data);
 
 struct node {
 	void* data;
@@ -55,6 +48,7 @@ struct node {
 typedef struct {
 	PrinterLinkedList printer;
 	ComparatorLinkedList comparator;
+	DataDeleterLinkedList dataDeleter;
 	NodePTR head;
 	unsigned int size;
 } LinkedList;
@@ -82,18 +76,18 @@ int AppendLinkedList(LinkedListPTR linkedList, void *data);
 int InsertSortedLinkedList(LinkedListPTR linkedList, void* data);
 
 // Stores the front of the linked list in data without removing it
-int PeekHead(LinkedListPTR linkedList, void **data);
+int PeekIndex(LinkedListPTR linkedList, void **data, int index);
 
 // Removes the front of the linked list and assigns it to *dataHandle
 int pop(LinkedListPTR linkedList, void **dataHandle);
 
 // CSC190 Purposes
-// Assigns node to the node in the linkedlist with data 'data' and NULL otherwise
+// Assigns *nodeHandle to the node in the linkedlist with data 'data' and NULL otherwise
 int FindNode(LinkedListPTR linkedList, NodePTR* nodeHandle, void* data);
 
 // CSC190 Purposes
-// Assigns *nodeHandle the address of the node that is equal to 'data' and null otherwise
-int DeleteNode(LinkedListPTR linkedList, void* data);
+// Removes the node from the linkedList that is equal to data (as per the comparator) and assigns the internal data to datahandle
+int DeleteNode(LinkedListPTR linkedList, void* data, void **dataHandle);
 
 // Note: assumes that data is integers
 // TODO: Generalize
@@ -113,3 +107,7 @@ int SetPrinterLinkedList(LinkedListPTR linkedList, PrinterLinkedList printer);
 int DefaultComparatorLinkedList(void* dataOne, void* dataTwo);
 
 void DefaultPrinterLinkedList(void* data);
+
+int SetDataDeleterLinkedList(LinkedListPTR linkedList, DataDeleterLinkedList dataDeleter);
+
+int DefaultDataDeleter(void* data);
