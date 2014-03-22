@@ -28,6 +28,7 @@ int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize )
 		CreateLinkedList(&linkedList);
 		SetComparatorLinkedList(linkedList, StringComparatorHashTable); // Compare the keys of a KVP struct
 		SetDataDeleterLinkedList(linkedList, DataDeleterHashTable); // Hashmap stores KVP structs. To delete data, need to set DataDeleter
+		SetPrinterLinkedList(linkedList, LinkedListPrinterHashTable); //Pretty print the linked list
 		SetBucketHashTable(mHashTablePTR, linkedList, i);
 	}
 
@@ -97,18 +98,24 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 	KVP_PTR kvp = malloc(sizeof(KVP));
 	kvp->key = (void*) hashKey;
 	kvp->value = data;
+	printf("Attempting to store: %s:%d\n", (char*)kvp->key, *((int*)kvp->value));
+	printf("Current linkedlist at bucket:\n");
+	PrintLinkedList(linkedList);
 
 	if(linkedList->size==0){
+		printf("List size 0, appending\n");
 		hashTable->numKeys += 1;
 		AppendLinkedList(linkedList, (void*) kvp);
 		*previousDataHandle = NULL;
 		return 0;
-	}else if(!(FindNode(linkedList, &mNode, (void*) kvp ) == FOUND) ){ // If no node was found
+	}else if(! (FindNode(linkedList, &mNode, (void*) kvp ) == FOUND) ){ // If no node was found
+		printf("Collision of buckets, appending\n");
 		hashTable->numKeys += 1;
 		AppendLinkedList(linkedList, (void*) kvp);
 		*previousDataHandle = NULL;
 		return 1;
 	}else{
+		printf("Node was found, setting previous data handle\n");
 		*previousDataHandle = ((KVP_PTR)mNode->data)->value;
 		((KVP_PTR)mNode->data)->value = data;
 		free(hashKey); // Node was found, we do not need the hash key or new KVP anymore
@@ -184,13 +191,18 @@ int GetKeys( HashTablePTR hashTable, char ***keysArrayHandle, unsigned int *keyC
 		LinkedListPTR linkedList;
 		GetBucketHashTable(hashTable, &linkedList, i);
 		if(!(linkedList->size==0)){
+			printf("In getkeys:\n");
+			PrintLinkedList(linkedList);
 			int j;
 			for(j=0; j<(linkedList->size); j++){
-				KVP_PTR temp;
-				PeekIndex(linkedList, (void**) &temp, i);
-				char* copy = (char*) malloc(sizeof(char) * strlen(temp->key) + 1);
-				strcpy(copy, temp->key);
-				*(keysArray+counter) = copy;
+				void* temp;
+				PeekIndex(linkedList, (void**) &temp, j);
+				KVP_PTR kvp = (KVP_PTR) temp;
+				char* key = (char*)(kvp->key);
+				printf("Key found: %s\n", key);
+				char* copy = (char*) malloc(sizeof(char) * strlen(key) + 1);
+				strcpy(copy, kvp->key);
+				*(keysArray + counter) = copy;
 				counter += 1;
 			}
 		}
@@ -233,6 +245,8 @@ int StringComparatorHashTable(void* dataOne, void* dataTwo)
 	char* stringOne = (char*) ( ( (KVP_PTR)dataOne ) -> key);
 	char* stringTwo = (char*) ( ( (KVP_PTR)dataTwo ) -> key);
 
+	printf("Comparing %s to %s\n", stringOne, stringTwo);
+
 	return strcmp(stringOne, stringTwo);
 }
 
@@ -261,7 +275,7 @@ int DataDeleterHashTable(void* data)
 {
 	KVP_PTR kvp = (KVP_PTR) data;
 	free(kvp->key);
-	//free(kvp->value); Commented out for CSC190 purposes
+	free(kvp->value); //Commented out for CSC190 purposes
 	return OK;
 }
 
@@ -270,4 +284,10 @@ int isValidHashTable(HashTablePTR hashTable){
 		return 1;
 	}
 	return 0;
+}
+
+void LinkedListPrinterHashTable(void* data){
+	// data is a KVP
+	KVP_PTR kvp = (KVP_PTR) data;
+	printf("%s:%d", (char*)(kvp->key), *((int*)kvp->value));
 }

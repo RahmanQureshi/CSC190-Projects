@@ -52,3 +52,6 @@ int StringComparatorHashTable(void* dataOne, void* dataTwo);
 int DataDeleterHashTable(void* data);
 
 int isValidHashTable(HashTablePTR hashTable);
+
+void LinkedListPrinterHashTable(void* data);
+
