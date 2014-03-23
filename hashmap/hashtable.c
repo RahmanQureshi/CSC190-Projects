@@ -98,24 +98,18 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 	KVP_PTR kvp = malloc(sizeof(KVP));
 	kvp->key = (void*) hashKey;
 	kvp->value = data;
-	printf("Attempting to store: %s:%d\n", (char*)kvp->key, *((int*)kvp->value));
-	printf("Current linkedlist at bucket:\n");
-	PrintLinkedList(linkedList);
 
 	if(linkedList->size==0){
-		printf("List size 0, appending\n");
 		hashTable->numKeys += 1;
 		AppendLinkedList(linkedList, (void*) kvp);
 		*previousDataHandle = NULL;
 		return 0;
 	}else if(! (FindNode(linkedList, &mNode, (void*) kvp ) == FOUND) ){ // If no node was found
-		printf("Collision of buckets, appending\n");
 		hashTable->numKeys += 1;
 		AppendLinkedList(linkedList, (void*) kvp);
 		*previousDataHandle = NULL;
 		return 1;
 	}else{
-		printf("Node was found, setting previous data handle\n");
 		*previousDataHandle = ((KVP_PTR)mNode->data)->value;
 		((KVP_PTR)mNode->data)->value = data;
 		free(hashKey); // Node was found, we do not need the hash key or new KVP anymore
@@ -136,7 +130,6 @@ int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle )
 
 	KVP_PTR compare = malloc(sizeof(KVP));
 	compare->key = key;
-
 	KVP_PTR retrieve;
 	if(DeleteNode(linkedList, compare, (void**)&retrieve) == FOUND ) {
 		hashTable->numKeys -= 1;
@@ -144,9 +137,11 @@ int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle )
 		free(retrieve->key);
 		free(retrieve);
 		free(compare);
+		PrintLinkedList(linkedList);
 		return 0;
 	}else{
 		free(compare);
+		PrintLinkedList(linkedList);
 		return -2;
 	}
 }
@@ -191,15 +186,12 @@ int GetKeys( HashTablePTR hashTable, char ***keysArrayHandle, unsigned int *keyC
 		LinkedListPTR linkedList;
 		GetBucketHashTable(hashTable, &linkedList, i);
 		if(!(linkedList->size==0)){
-			printf("In getkeys:\n");
-			PrintLinkedList(linkedList);
 			int j;
 			for(j=0; j<(linkedList->size); j++){
 				void* temp;
 				PeekIndex(linkedList, (void**) &temp, j);
 				KVP_PTR kvp = (KVP_PTR) temp;
 				char* key = (char*)(kvp->key);
-				printf("Key found: %s\n", key);
 				char* copy = (char*) malloc(sizeof(char) * strlen(key) + 1);
 				strcpy(copy, kvp->key);
 				*(keysArray + counter) = copy;
@@ -233,7 +225,7 @@ int getHashCode(char* key, unsigned int range)
 
 int checkSentinel(HashTablePTR hashTable)
 {
-	int sentinel = hashTable->sentinel;
+	int sentinel = ((int*) hashTable)[0];
 	if(sentinel == (int) SENTINEL) {
 		return 1;
 	}
@@ -244,8 +236,6 @@ int StringComparatorHashTable(void* dataOne, void* dataTwo)
 {
 	char* stringOne = (char*) ( ( (KVP_PTR)dataOne ) -> key);
 	char* stringTwo = (char*) ( ( (KVP_PTR)dataTwo ) -> key);
-
-	printf("Comparing %s to %s\n", stringOne, stringTwo);
 
 	return strcmp(stringOne, stringTwo);
 }

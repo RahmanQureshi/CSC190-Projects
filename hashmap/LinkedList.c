@@ -113,9 +113,6 @@ int AppendLinkedList(LinkedListPTR linkedList, void *data)
 
 	linkedList->size = linkedList->size + 1; // Everything OK, increase
 
-	printf("In AppendLinkedList, current linked list is:\n");
-	PrintLinkedList(linkedList);
-
 	return OK;
 }
 
@@ -222,7 +219,6 @@ int FindNode(LinkedListPTR linkedList, NodePTR* nodeHandle, void* data)
 
 	while(next!=NULL){
 		if(comparator(data, next->data)==0){
-			printf("Node Found\n");
 			*nodeHandle = next;
 			return FOUND; // Found and assigned
 		}
