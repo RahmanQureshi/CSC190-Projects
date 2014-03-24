@@ -39,6 +39,8 @@ int GetLoadFactor( HashTablePTR hashTable, float *loadFactor );
 
 int getHashCode(char* key, unsigned int range);
 
+int SimpleIntHash( int value, unsigned int range );
+
 int GetLoadFactor( HashTablePTR hashTable, float *loadFactor );
 
 int checkSentinel(HashTablePTR hashTable);
@@ -54,4 +56,6 @@ int DataDeleterHashTable(void* data);
 int isValidHashTable(HashTablePTR hashTable);
 
 void LinkedListPrinterHashTable(void* data);
+
+int PrintHashTable(HashTablePTR hashTable);
 

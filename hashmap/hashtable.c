@@ -137,11 +137,9 @@ int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle )
 		free(retrieve->key);
 		free(retrieve);
 		free(compare);
-		PrintLinkedList(linkedList);
 		return 0;
 	}else{
 		free(compare);
-		PrintLinkedList(linkedList);
 		return -2;
 	}
 }
@@ -220,7 +218,26 @@ int GetLoadFactor( HashTablePTR hashTable, float *loadFactor )
 
 int getHashCode(char* key, unsigned int range)
 {
-	return 0;
+	int total = 0;
+	int length = (int) strlen(key);
+	for (int i = 0; i < length; i++ )
+	{
+		total = total + (int) key[i];
+	}
+	return SimpleIntHash( total, range); 
+}
+
+
+int SimpleIntHash( int value, unsigned int range )
+{
+	int result;
+	result = ( value % (int) range );
+	if ( result < 0 )
+	{
+		result = -result;
+	}
+
+	return result;
 }
 
 int checkSentinel(HashTablePTR hashTable)
@@ -280,4 +297,23 @@ void LinkedListPrinterHashTable(void* data){
 	// data is a KVP
 	KVP_PTR kvp = (KVP_PTR) data;
 	printf("%s:%d", (char*)(kvp->key), *((int*)kvp->value));
+}
+
+int PrintHashTable(HashTablePTR hashTable){
+
+	if(!isValidHashTable(hashTable)){
+		return -1;
+	}
+
+	int i;
+	unsigned int size = hashTable->numBuckets;
+
+	for(i=0; i<size; i++){
+		LinkedListPTR linkedList;
+		GetBucketHashTable(hashTable, &linkedList, i);
+		printf("Bucket %d: ", i);
+		PrintLinkedList(linkedList);
+	}
+
+	return 0;
 }

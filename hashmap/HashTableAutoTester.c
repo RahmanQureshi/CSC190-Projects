@@ -4,7 +4,7 @@
 #define FATAL_ERROR -1
 #define UNEXPECTED_ERROR -2
 
-#define INITIAL_SIZE 1
+#define INITIAL_SIZE 20
 
 //TODO: MAKE TWO TESTERS AND/OR USE COMMANDLINE ARGUMENTS WITH A .SH FILE TO SWITCH BETWEEN TESTERS
 
@@ -15,6 +15,8 @@ int main()
 	HashTablePTR mHashTable = NULL;
 	fprintf(stderr, "Creating HashTable\n");
 	CreateHashTable(&mHashTable, INITIAL_SIZE);
+
+	fprintf(stderr, "Printing Hashtable: [%d]\n", PrintHashTable(mHashTable));
 
 	void* previousData;
 	char* keyArray[7] = {"a","b","c","d","e","f","a"};
@@ -32,6 +34,8 @@ int main()
 			previousData = NULL;
 		}
 	}
+
+	fprintf(stderr, "Printing Hashtable: [%d]\n", PrintHashTable(mHashTable));
 
 	char **hashKeysArray;
 	unsigned int keyCount;
@@ -60,6 +64,12 @@ int main()
 		previousData = NULL;
 	}else{
 		fprintf(stderr, "No data found\n");
+	}
+
+	float loadFactor;
+	fprintf(stderr, "Getting load factor: [%d]\n", GetLoadFactor( mHashTable, &loadFactor ) );
+	if(loadFactor!=-1){
+		fprintf(stderr, "Load factor: %.2f\n", loadFactor);
 	}
 
 	fprintf(stderr, "Destroying HashTable\n");
