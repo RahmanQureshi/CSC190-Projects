@@ -48,8 +48,6 @@ int DestroyHashTable( HashTablePTR *hashTableHandle )
 		return -1;
 	}
 
-
-
 	HashTablePTR mHashTablePTR = *hashTableHandle;
 	LinkedListPTR *buckets = mHashTablePTR->buckets;
 
@@ -296,7 +294,7 @@ int isValidHashTable(HashTablePTR hashTable){
 void LinkedListPrinterHashTable(void* data){
 	// data is a KVP
 	KVP_PTR kvp = (KVP_PTR) data;
-	printf("%s:%d", (char*)(kvp->key), *((int*)kvp->value));
+	printf("%s:%d", (char*)(kvp->key), *((int*)kvp->value) );
 }
 
 int PrintHashTable(HashTablePTR hashTable){
