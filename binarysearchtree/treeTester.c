@@ -1,6 +1,8 @@
 #include <string.h>
 #include "tree.h"
 
+#define MAX_KEY_SIZE 100
+
 int main()
 {
 	char* input = (char*) malloc(sizeof(char) * 100);
@@ -27,28 +29,34 @@ int main()
 				printf("Invalid\n");
 			}
 		}else if(!strcmp(input, "insert")){
-			printf("Item: ");
-			int item;
-			scanf("%d", &item);
-			Insert(&mNode, item);
+			printf("Key: ");
+			char key[MAX_KEY_SIZE];
+			scanf("%s", key);
+			printf("Value: ");
+			int* value = malloc(sizeof(int));
+			scanf("%d", value);
+			Insert(&mNode, key, (void*) value);
 		}else if(!strcmp(input, "find")){
-			printf("Item: ");
-			int item;
-			scanf("%d", &item);
-			treeNodePTR temp = FindItem(mNode, item);
+			printf("Key: ");
+			char key[MAX_KEY_SIZE];
+			scanf("%s", key);
+			treeNodePTR temp = FindItem(mNode, key);
 			if(temp==NULL){
 				printf("Item not found - not in tree\n");
 			}else{
 				printf("Item found - address of item is [%p]\n", (void*)temp);
 			}
 		}else if(!strcmp(input, "delete")){
-			printf("Item: ");
-			int item;
-			scanf("%d", &item);
-			if(DeleteNode(&mNode, item)){
+			printf("Key: ");
+			char key[MAX_KEY_SIZE];
+			scanf("%s", key);
+			void* data;
+			if(DeleteNode(&mNode, key, &data)){
 				printf("Node not found - not deleted\n");
 			}else{
 				printf("Node deleted\n");
+				free(data);
+				data = NULL;
 			}
 		}else if(!strcmp(input, "quit")){
 			break;

@@ -1,11 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 typedef struct treeNode* treeNodePTR;
 
 struct treeNode
 {
-	int data;
+	char* key;
+	void* value;
 	struct treeNode *right, *left;
 };
 
@@ -14,13 +16,12 @@ typedef void (*NodeProcessor)(treeNodePTR node);
 /*
 * API
 */
-void Insert(struct treeNode**, int);
-int DeleteNode(struct treeNode**, int);
-struct treeNode *FindItem(struct treeNode*, int);
+void Insert(struct treeNode**, char*, void*);
+int DeleteNode(struct treeNode**, char*, void**);
+struct treeNode *FindItem(struct treeNode*, char*);
 int PrintPreOrder(struct treeNode*);
 int PrintInOrder(struct treeNode*);
 int PrintPostOrder(struct treeNode*);
-
 
 /*
 * Personal functions (fit for public usage)
