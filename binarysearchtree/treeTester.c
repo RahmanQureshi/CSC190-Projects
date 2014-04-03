@@ -60,7 +60,13 @@ int main()
 			}
 		}else if(!strcmp(input, "quit")){
 			break;
-		}else{
+		}else if(!strcmp(input, "size")){
+			if(mNode==NULL){
+				printf("Empty list does not have a size!\n");
+				continue;
+			}
+			printf("Current size: %d\n", mNode->size);
+		} else {
 			printf("Invalid\n");
 		}
 	}
