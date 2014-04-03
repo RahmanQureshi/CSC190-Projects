@@ -33,7 +33,7 @@ static treeNodePTR NewTreeNode(char* key, void* data)
 	return newNode;
 }
 
-void Insert(treeNodePTR* rootHandle, char* key, void* value)
+int Insert(treeNodePTR* rootHandle, char* key, void* value)
 {
 	treeNodePTR root = *rootHandle;
 
@@ -47,9 +47,11 @@ void Insert(treeNodePTR* rootHandle, char* key, void* value)
 		treeNodePTR newNode = NewTreeNode(key, value);
 		if(newNode==NULL){
 			printf("Could not allocate memory for node\n");
+			return -1;
 		}
 		*rootHandle = newNode;
 	}
+	return 0;
 }
 
 int DeleteNode(struct treeNode** rootHandle, char* key, void** dataHandle)

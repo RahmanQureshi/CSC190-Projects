@@ -17,7 +17,7 @@ typedef void (*NodeProcessor)(treeNodePTR node);
 /*
 * API
 */
-void Insert(struct treeNode**, char*, void*);
+int Insert(struct treeNode**, char*, void*);
 int DeleteNode(struct treeNode**, char*, void**);
 struct treeNode *FindItem(struct treeNode*, char*);
 int PrintPreOrder(struct treeNode*);
