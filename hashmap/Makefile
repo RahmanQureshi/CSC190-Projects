@@ -2,29 +2,17 @@ CC = gcc
 CFLAGS = -c -g -std=c99 -Wall -Werror -Wconversion -pedantic
 LFLAGS = -g -std=c99 -Wall -Werror -Wconversion -pedantic
 EXECUTABLE = hashTableTester
-SRC = hashtable.c LinkedList.c HashTableAutoTester.c
+SRC = hashtable.c tree.c HashTableAutoTester.c
 OBJ = $(SRC:.c=.o)
-HEADS = hashtable.h LinkedList.h
+DEPS = hashtable.h tree.h
 
 all: $(EXECUTABLE) clean
 
 $(EXECUTABLE): $(OBJ)
-	$(CC) $^ -o $@
+	$(CC) $(LFLAGS) $^ -o $@
 
-hashtable.o: hashtable.c
-	$(CC) $(CFLAGS) $^ -o $@
-
-LinkedList.o: LinkedList.c
-	$(CC) $(CFLAGS) $^ -o $@
-
-HashTableAutoTester.o: HashTableAutoTester.c
-	$(CC) $(CFLAGS) $^ -o $@
-
-LinkedList.c: LinkedList.h
-
-hashtable.c: hashtable.h
-
-HashTableAutoTester.c: HashTableAutoTester.o
+%.o: %.c $(DEPS)
+	$(CC) $(CFLAGS) $< -o $@
 
 clean:
 	rm -rf *.o

@@ -1,16 +1,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "LinkedList.h"
+#include "tree.h"
+#include "string.h"
 
-typedef struct
+
+typedef struct HashTableObjectTag HashTableObject;
+typedef HashTableObject *HashTablePTR;
+
+typedef struct HashTableInfoTag
 {
-    int sentinel;
-    unsigned int numBuckets;
-    LinkedListPTR *buckets;
-    int numKeys;
+    unsigned int bucketCount; // current number of buckets
+    float loadFactor; // ( number of entries / number of buckets )
+    float useFactor; // ( number of buckets with one or more entries / number of buckets )
+    unsigned int largestBucketSize; // number of entries in the bucket containing the most entries
+    int dynamicBehaviour; // whether or not the Hash Table will resize dynamically
+    float expandUseFactor; // the value of useFactor that will trigger an expansion of the number of buckets
+    float contractUseFactor; // the value of useFactor that will trigger a contraction in the number of buckets
+} HashTableInfo;
 
-} HashTableObject;
 
 typedef struct 
 {
@@ -19,8 +27,6 @@ typedef struct
 } KVP;
 
 typedef KVP *KVP_PTR;
-
-typedef HashTableObject *HashTablePTR;
 
 int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize );
 
@@ -34,27 +40,4 @@ int FindEntry( HashTablePTR hashTable, char *key, void **dataHandle );
 
 int GetKeys( HashTablePTR hashTable, char ***keysArrayHandle, unsigned int *keyCount );
 
-int GetLoadFactor( HashTablePTR hashTable, float *loadFactor );
-
-int getHashCode(char* key, unsigned int range);
-
-int SimpleIntHash( int value, unsigned int range );
-
-int GetLoadFactor( HashTablePTR hashTable, float *loadFactor );
-
-int checkSentinel(HashTablePTR hashTable);
-
-int GetBucketHashTable(HashTablePTR hashTable, LinkedListPTR* linkedList, int index);
-
-int SetBucketHashTable(HashTablePTR hashTable, LinkedListPTR linkedList, int index);
-
-int StringComparatorHashTable(void* dataOne, void* dataTwo);
-
-int DataDeleterHashTable(void* data);
-
-int isValidHashTable(HashTablePTR hashTable);
-
-void LinkedListPrinterHashTable(void* data);
-
 int PrintHashTable(HashTablePTR hashTable);
-

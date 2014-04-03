@@ -1,73 +1,76 @@
 #include "hashtable.h"
-#include "string.h"
 
 #define SENTINEL 0xDEADBEEF
-#define OFFSET 1 //One integer
+
+/* Declarations */
+int getHashCode(char* key, unsigned int range);
+int SimpleIntHash( int value, unsigned int range );
+
+int GetLoadFactor( HashTablePTR hashTable, float *loadFactor );
+
+int isValidHashTable(HashTablePTR hashTable);
+int checkSentinel(HashTablePTR hashTable);
+
+struct HashTableObjectTag
+{
+    int sentinel;
+    HashTableInfo info;
+    treeNodePTR* buckets;
+};
+
+
+/* Implementations */
 
 int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize )
 {
-	// Create the Hashtable
-	HashTablePTR mHashTablePTR = (HashTablePTR) malloc(sizeof(HashTableObject));
-	if(mHashTablePTR == NULL){
-		return -1;
-	}
+	// Create hashtable
+	HashTablePTR newHashTable = malloc(sizeof(struct HashTableObjectTag));
+	
+	// Set the sentinel
+	newHashTable->sentinel = (int) SENTINEL;
 
-	// Set sentinel
-	mHashTablePTR->sentinel = (int) SENTINEL;
-
-	// Create storage array
-	mHashTablePTR->buckets = (LinkedListPTR*) malloc(sizeof(LinkedListPTR) * initialSize + sizeof(int));
-	if(mHashTablePTR->buckets == NULL){
-		return -1;
-	}
-
-	// Create linked list for each bucket
+	// Initialize memory (buckets)
+	newHashTable->buckets = (treeNodePTR*) malloc(sizeof(treeNodePTR) * initialSize);
 	int i;
 	for(i=0; i<initialSize; i++){
-		LinkedListPTR linkedList;
-		CreateLinkedList(&linkedList);
-		SetComparatorLinkedList(linkedList, StringComparatorHashTable); // Compare the keys of a KVP struct
-		SetDataDeleterLinkedList(linkedList, DataDeleterHashTable); // Hashmap stores KVP structs. To delete data, need to set DataDeleter
-		SetPrinterLinkedList(linkedList, LinkedListPrinterHashTable); //Pretty print the linked list
-		SetBucketHashTable(mHashTablePTR, linkedList, i);
+		*(newHashTable->buckets + i) = NULL;
 	}
 
-	// Set size
-	mHashTablePTR->numBuckets = initialSize;
-	mHashTablePTR->numKeys = 0;
+	// Assign initial properties
+	newHashTable->info.bucketCount = initialSize;
+	newHashTable->info.loadFactor = 0;
+	newHashTable->info.useFactor = 0;
+	newHashTable->info.largestBucketSize = 0;
+	newHashTable->info.dynamicBehaviour = 0;
+	newHashTable->info.expandUseFactor = 0;
+	newHashTable->info.contractUseFactor = 0;
 
-	// Set Handle
-	*hashTableHandle = mHashTablePTR;
-
+	*hashTableHandle = newHashTable;
 	return 0;
 }
 
 int DestroyHashTable( HashTablePTR *hashTableHandle )
 {
-	if(hashTableHandle == NULL || !isValidHashTable(*hashTableHandle)){
+	HashTablePTR hashTable = *hashTableHandle;
+	
+	if(!isValidHashTable(hashTable)){
 		return -1;
 	}
 
-	HashTablePTR mHashTablePTR = *hashTableHandle;
-	LinkedListPTR *buckets = mHashTablePTR->buckets;
-
-	unsigned int numBuckets = mHashTablePTR->numBuckets;
-
-	// Free LinkedLists
-	if(buckets!=NULL){
-		int i;
-		for(i=0; i<numBuckets; i++){
-			LinkedListPTR linkedList;
-			GetBucketHashTable(mHashTablePTR, &linkedList, i);
-			DestroyNodesAndDataLinkedList(linkedList);
-			DestroyLinkedList(&linkedList);
+	// Destroy the nodes in the buckets
+	unsigned int size = (hashTable->info).bucketCount;
+	int i;
+	for(i=0; i<size; i++){
+		treeNodePTR head = *(hashTable->buckets + i);
+		while(!(head==NULL)){
+			void* data;
+			DeleteNode(&head, head->key, &data);
+			free(data); // Assuming it is an integer; NOTE: COMMENT OUT FOR ASSIGNMENT
 		}
 	}
-
-	// Free hashtable and buckets
-	free(buckets);
-	free(mHashTablePTR);
-
+	free(hashTable->buckets);
+	free(*hashTableHandle);
+	*hashTableHandle = NULL;
 	return 0;
 }
 
@@ -77,140 +80,43 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 		return -1;
 	}
 
-	// Copy the key
-	char* hashKey = (char*) malloc(sizeof(char) * strlen(key) + 1);
-	strcpy(hashKey, key);
-
-	// Get hashCode
-	int hashCode = getHashCode(hashKey, hashTable->numBuckets);
-
-	// Insert the key:data pair in the element
-		// Get the linked list at hashCode
-		// If the list is empty, insert and return 0
-		// If the linkedlist contains the key already, overwrite its data and return 2
-		// Otherwise append and return 1
-
-	LinkedListPTR linkedList;
-	GetBucketHashTable(hashTable, &linkedList, hashCode);
-	NodePTR mNode; // Handle for previous data, if it exists
-	KVP_PTR kvp = malloc(sizeof(KVP));
-	kvp->key = (void*) hashKey;
-	kvp->value = data;
-
-	if(linkedList->size==0){
-		hashTable->numKeys += 1;
-		AppendLinkedList(linkedList, (void*) kvp);
-		*previousDataHandle = NULL;
-		return 0;
-	}else if(! (FindNode(linkedList, &mNode, (void*) kvp ) == FOUND) ){ // If no node was found
-		hashTable->numKeys += 1;
-		AppendLinkedList(linkedList, (void*) kvp);
-		*previousDataHandle = NULL;
-		return 1;
+	int hashCode = getHashCode(key, hashTable->info.bucketCount);
+	treeNodePTR tree = *(hashTable->buckets + hashCode);
+	if(tree==NULL){ // If size is 0
+		if( Insert(hashTable->buckets + hashCode, key, previousDataHandle) == -1 ){
+			return -2; // Not enough memory
+		} else{
+			return 0;
+		}
 	}else{
-		*previousDataHandle = ((KVP_PTR)mNode->data)->value;
-		((KVP_PTR)mNode->data)->value = data;
-		free(hashKey); // Node was found, we do not need the hash key or new KVP anymore
-		free(kvp);
-		return 2;
+		if(DeleteNode(&tree, key, previousDataHandle)==-1){
+			Insert(hashTable->buckets + hashCode, key, data);
+			return 1; //Collision, different keys
+		}else{
+			Insert(hashTable->buckets + hashCode, key, previousDataHandle);
+			return 2; // Collision with same keys, previousDataHandle now points to data
+		}
 	}
+	return 0;
 }
 
 int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle )
 {
-	if(!isValidHashTable(hashTable)){
-		return -1;
-	}
-
-	int hashCode = getHashCode(key, hashTable->numBuckets);
-	LinkedListPTR linkedList;
-	GetBucketHashTable(hashTable, &linkedList, hashCode);
-
-	KVP_PTR compare = malloc(sizeof(KVP));
-	compare->key = key;
-	KVP_PTR retrieve;
-	if(DeleteNode(linkedList, compare, (void**)&retrieve) == FOUND ) {
-		hashTable->numKeys -= 1;
-		*dataHandle = retrieve->value;
-		free(retrieve->key);
-		free(retrieve);
-		free(compare);
-		return 0;
-	}else{
-		free(compare);
-		return -2;
-	}
+	return 0;
 }
 
 int FindEntry( HashTablePTR hashTable, char *key, void **dataHandle )
 {
-	if(!isValidHashTable(hashTable)){
-		return -1;
-	}
-
-	// Get the hash code
-	int hashCode = getHashCode(key, hashTable->numBuckets);
-	LinkedListPTR bucket;
-	GetBucketHashTable(hashTable, &bucket, hashCode);
-
-	NodePTR node; //
-	KVP_PTR kvp = malloc(sizeof(KVP)); // Comparator takes kvp
-	kvp->key = key;
-
-	if(FindNode(bucket, &node, (void*)kvp)==FOUND){
-		*dataHandle = ((KVP_PTR)node->data)->value;
-		free(kvp);
-		return 0;
-	}else{
-		free(kvp);
-		return -2;
-	}
+	return 0;
 }
 
 int GetKeys( HashTablePTR hashTable, char ***keysArrayHandle, unsigned int *keyCount )
 {
-	if(!isValidHashTable(hashTable)){
-		return -1;
-	}
-
-	int i;
-	unsigned int numKeys = (unsigned int) hashTable->numKeys;
-	int counter = 0; // Number of keys processed so far
-	char **keysArray = (char**) malloc( sizeof(char*) * (unsigned long) numKeys );
-
-	for(i=0; i<(hashTable->numBuckets); i++){ // Check every bucket
-		LinkedListPTR linkedList;
-		GetBucketHashTable(hashTable, &linkedList, i);
-		if(!(linkedList->size==0)){
-			int j;
-			for(j=0; j<(linkedList->size); j++){
-				void* temp;
-				PeekIndex(linkedList, (void**) &temp, j);
-				KVP_PTR kvp = (KVP_PTR) temp;
-				char* key = (char*)(kvp->key);
-				char* copy = (char*) malloc(sizeof(char) * strlen(key) + 1);
-				strcpy(copy, kvp->key);
-				*(keysArray + counter) = copy;
-				counter += 1;
-			}
-		}
-	}
-	*keysArrayHandle = keysArray;
-	*keyCount = numKeys;
 	return 0;
 }
 
 int GetLoadFactor( HashTablePTR hashTable, float *loadFactor )
 {
-	if(!isValidHashTable(hashTable)){
-		return -1;
-	}
-	
-	float numItems = (float) hashTable->numKeys;
-	float numBuckets = (float) hashTable->numBuckets;
-
-	*loadFactor = numItems/numBuckets;
-
 	return 0;
 }
 
@@ -218,7 +124,8 @@ int getHashCode(char* key, unsigned int range)
 {
 	int total = 0;
 	int length = (int) strlen(key);
-	for (int i = 0; i < length; i++ )
+	int i;
+	for (i = 0; i < length; i++ )
 	{
 		total = total + (int) key[i];
 	}
@@ -238,6 +145,13 @@ int SimpleIntHash( int value, unsigned int range )
 	return result;
 }
 
+int isValidHashTable(HashTablePTR hashTable){
+	if(!(hashTable==NULL) && checkSentinel(hashTable)){
+		return 1;
+	}
+	return 0;
+}
+
 int checkSentinel(HashTablePTR hashTable)
 {
 	int sentinel = ((int*) hashTable)[0];
@@ -247,71 +161,8 @@ int checkSentinel(HashTablePTR hashTable)
 	return 0;
 }
 
-int StringComparatorHashTable(void* dataOne, void* dataTwo)
+
+int PrintHashTable(HashTablePTR hashTable)
 {
-	char* stringOne = (char*) ( ( (KVP_PTR)dataOne ) -> key);
-	char* stringTwo = (char*) ( ( (KVP_PTR)dataTwo ) -> key);
-
-	return strcmp(stringOne, stringTwo);
-}
-
-int GetBucketHashTable(HashTablePTR hashTable, LinkedListPTR* linkedList, int index)
-{
-	if(!isValidHashTable(hashTable)){
-		return -1;
-	}
-	LinkedListPTR* buckets = hashTable->buckets;
-	*linkedList = *(buckets + index);
-	return 0;
-}
-
-int SetBucketHashTable(HashTablePTR hashTable, LinkedListPTR linkedList, int index)
-{
-	if(!isValidHashTable(hashTable)){
-		return -1;
-	}
-
-	LinkedListPTR* buckets = hashTable->buckets;
-	*(buckets + index) = linkedList;
-	return 0;
-}
-
-int DataDeleterHashTable(void* data)
-{
-	KVP_PTR kvp = (KVP_PTR) data;
-	free(kvp->key);
-	free(kvp->value); //Commented out for CSC190 purposes
-	return OK;
-}
-
-int isValidHashTable(HashTablePTR hashTable){
-	if(!(hashTable==NULL) && checkSentinel(hashTable)){
-		return 1;
-	}
-	return 0;
-}
-
-void LinkedListPrinterHashTable(void* data){
-	// data is a KVP
-	KVP_PTR kvp = (KVP_PTR) data;
-	printf("%s:%d", (char*)(kvp->key), *((int*)kvp->value) );
-}
-
-int PrintHashTable(HashTablePTR hashTable){
-
-	if(!isValidHashTable(hashTable)){
-		return -1;
-	}
-
-	int i;
-	unsigned int size = hashTable->numBuckets;
-
-	for(i=0; i<size; i++){
-		LinkedListPTR linkedList;
-		GetBucketHashTable(hashTable, &linkedList, i);
-		printf("Bucket %d: ", i);
-		PrintLinkedList(linkedList);
-	}
-
 	return 0;
 }
