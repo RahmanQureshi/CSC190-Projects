@@ -8,6 +8,7 @@ struct treeNode
 {
 	char* key;
 	void* value;
+	int size;
 	struct treeNode *right, *left;
 };
 

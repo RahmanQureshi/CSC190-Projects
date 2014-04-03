@@ -25,8 +25,10 @@ static treeNodePTR NewTreeNode(char* key, void* data)
 	// Copy the pointer to data
 	newNode->value = data;
 
+	// Set default values
 	newNode->left = NULL;
 	newNode->right = NULL;
+	newNode->size = 1;
 
 	return newNode;
 }
@@ -36,8 +38,10 @@ void Insert(treeNodePTR* rootHandle, char* key, void* value)
 	treeNodePTR root = *rootHandle;
 
 	if( root!=NULL && StringToAscii(key) < StringToAscii(root->key) ){
+		root->size += 1; // Increment each node's value by 1
 		Insert(&(root->left), key, value);
 	}else if( root!=NULL && StringToAscii(key) >= StringToAscii(root->key) ){ // If equal, always go right
+		root->size += 1;
 		Insert(&(root->right), key, value);
 	}else{
 		treeNodePTR newNode = NewTreeNode(key, value);
@@ -57,8 +61,10 @@ int DeleteNode(struct treeNode** rootHandle, char* key, void** dataHandle)
 		*dataHandle = NULL;
 		return -1;
 	}else if( StringToAscii(key) < StringToAscii(root->key) ){
+		root->size -= 1;
 		return DeleteNode( &(root->left), key, dataHandle);
 	}else if( StringToAscii(key) > StringToAscii(root->key) ) {
+		root->size -= 1;
 		return DeleteNode(&(root->right), key, dataHandle);
 	}
 
@@ -67,6 +73,7 @@ int DeleteNode(struct treeNode** rootHandle, char* key, void** dataHandle)
 
 	// Replace root with the node with max of left if it exists, or min of right 
 	if( ! (root->left==NULL) ){
+		root->size -= 1;
 		treeNodePTR *replace; // Get replacement node
 		getMaxNodeHandle(&(root->left), &replace);
 		// Swap keys, bring data up
@@ -78,6 +85,7 @@ int DeleteNode(struct treeNode** rootHandle, char* key, void** dataHandle)
 		DeleteNode(replace, (*replace)->key, &dummy);
 		return 0;
 	}else if( !(root->right==NULL) ){
+		root->size -= 1;
 		treeNodePTR* replace;
 		getMinNodeHandle(&(root->right), &replace);
 		char* temp = root->key;
@@ -167,6 +175,9 @@ int getMaxNodeHandle(treeNodePTR* rootHandle, treeNodePTR** handlehandle)
 		return -1;
 	}
 	treeNodePTR root = *rootHandle;
+	// WARNING: USED IN DELETE FUNCTION, THAT IS WHY SIZE IS BEING DECREMENTED
+	// This is very bad design
+	root->size-=1; 
 	if( (root->right)==NULL ){
 		*handlehandle = rootHandle;
 		return 0;
@@ -183,6 +194,9 @@ int getMinNodeHandle(treeNodePTR* rootHandle, treeNodePTR** handlehandle)
 		return -1;
 	}
 	treeNodePTR root = *rootHandle;
+	// WARNING: USED IN DELETE FUNCTION, THAT IS WHY SIZE IS BEING DECREMENTED
+	// This is very bad design
+	root->size-=1; 
 	if( (root->left)==NULL ){
 		*handlehandle = rootHandle;
 		return 0;
