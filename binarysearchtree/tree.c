@@ -37,9 +37,7 @@ int Insert(treeNodePTR* rootHandle, char* key, void* value)
 {
 	treeNodePTR root = *rootHandle;
 
-	if( root!=NULL 
-		&& StringToAscii(key) 
-		< StringToAscii(root->key) ){
+	if( root!=NULL && StringToAscii(key) < StringToAscii(root->key) ){
 		root->size += 1; // Increment each node's value by 1
 		Insert(&(root->left), key, value);
 	}else if( root!=NULL && StringToAscii(key) >= StringToAscii(root->key) ){ // If equal, always go right
@@ -58,6 +56,10 @@ int Insert(treeNodePTR* rootHandle, char* key, void* value)
 
 int DeleteNode(struct treeNode** rootHandle, char* key, void** dataHandle)
 {
+	treeNodePTR temp = FindItem(*rootHandle, key);
+	if(temp==NULL) return -1; // If the node exists begin traversing and reducing sizes, otherwise simply return
+
+
 	// Find the node
 	treeNodePTR root = *rootHandle;
 
@@ -115,6 +117,7 @@ int RetrieveKeys(treeNodePTR node, char*** keysHandle, int* numKeys) // Wrapper 
 {
 	if(node==NULL){
 		*numKeys = 0;
+		*keysHandle = NULL;
 		return 0;
 	}else{
 		*numKeys = node->size;
@@ -131,7 +134,6 @@ int RetrieveKeys(treeNodePTR node, char*** keysHandle, int* numKeys) // Wrapper 
 int _RetrieveKeys(treeNodePTR node, char*** keysHandle)
 {
 	if(node==NULL) return 0;
-	printf("Inserting key at index: %d\n", counter);
 	char* copy = malloc(sizeof(char) * strlen(node->key) + 1);
 	if( copy == NULL) return -2;
 	strcpy(copy, node->key);
