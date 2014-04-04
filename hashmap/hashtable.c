@@ -83,17 +83,19 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 	int hashCode = getHashCode(key, hashTable->info.bucketCount);
 	treeNodePTR tree = *(hashTable->buckets + hashCode);
 	if(tree==NULL){ // If size is 0
-		if( Insert(hashTable->buckets + hashCode, key, previousDataHandle) == -1 ){
+		*previousDataHandle = NULL;
+		if( Insert(hashTable->buckets + hashCode, key, data) == -1 ){
 			return -2; // Not enough memory
 		} else{
 			return 0;
 		}
 	}else{
-		if(DeleteNode(&tree, key, previousDataHandle)==-1){
+		if(DeleteNode((hashTable->buckets + hashCode), key, previousDataHandle)==-1){
 			Insert(hashTable->buckets + hashCode, key, data);
 			return 1; //Collision, different keys
 		}else{
-			Insert(hashTable->buckets + hashCode, key, previousDataHandle);
+			Insert(hashTable->buckets + hashCode, key, data);
+			previousDataHandle = NULL;
 			return 2; // Collision with same keys, previousDataHandle now points to data
 		}
 	}
@@ -102,11 +104,33 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 
 int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle )
 {
+	if(!isValidHashTable(hashTable)){
+		return -1;
+	}
+	int hashCode = getHashCode(key, hashTable->info.bucketCount);
+	if(DeleteNode((hashTable->buckets + hashCode), key, dataHandle)==-1){
+		return -2;
+	}else{
+		return 0;
+	}
 	return 0;
 }
 
 int FindEntry( HashTablePTR hashTable, char *key, void **dataHandle )
 {
+	if(!isValidHashTable(hashTable)){
+		return -1;
+	}
+	int hashCode = getHashCode(key, hashTable->info.bucketCount);
+	treeNodePTR root = *(hashTable->buckets + hashCode);
+	treeNodePTR node = FindItem(root, key);
+	if(node==NULL){
+		*dataHandle = NULL;
+		return -2;
+	}else{
+		*dataHandle = node->value;
+		return 0;
+	}
 	return 0;
 }
 

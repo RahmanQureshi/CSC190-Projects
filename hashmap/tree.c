@@ -37,7 +37,9 @@ int Insert(treeNodePTR* rootHandle, char* key, void* value)
 {
 	treeNodePTR root = *rootHandle;
 
-	if( root!=NULL && StringToAscii(key) < StringToAscii(root->key) ){
+	if( root!=NULL 
+		&& StringToAscii(key) 
+		< StringToAscii(root->key) ){
 		root->size += 1; // Increment each node's value by 1
 		Insert(&(root->left), key, value);
 	}else if( root!=NULL && StringToAscii(key) >= StringToAscii(root->key) ){ // If equal, always go right

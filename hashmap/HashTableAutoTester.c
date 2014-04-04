@@ -4,6 +4,8 @@
 #define FATAL_ERROR -1
 #define UNEXPECTED_ERROR -2
 
+#define KEY_SIZE 100
+
 int main()
 {
 	char* input = malloc(sizeof(char) * 100);
@@ -21,6 +23,42 @@ int main()
 			break;
 		}else if( strcmp(input, "destroy") == 0 ){
 			DestroyHashTable( &mHashTable );
+		}else if( strcmp(input, "insert") == 0 ){
+			char key[KEY_SIZE];
+			int* value = malloc(sizeof(int));
+			printf("Key: ");
+			scanf("%s", key);
+			printf("Value: ");
+			scanf("%d", value);
+			void* prevData;
+			printf("Return Code: [%d]\n", InsertEntry(mHashTable, key, (void*) value, &prevData));
+			if(!(prevData==NULL)){
+				printf("Key collision, previous data value: [%d]\n", *((int*)prevData));
+				free(prevData);
+				prevData = NULL;
+			}
+		}else if( strcmp(input, "find") == 0 ){
+			char key[KEY_SIZE];
+			printf("Key: ");
+			scanf("%s", key);
+			void* data;
+			printf("Return Code: [%d]", FindEntry(mHashTable, key, &data));
+			if(data==NULL){
+				printf("Key not found\n");
+			}else{
+				printf("Key found. Data: %d\n", *((int*)data));
+			}
+		}else if( strcmp(input, "delete") == 0 ){
+			char key[KEY_SIZE];
+			printf("Key: ");
+			scanf("%s", key);
+			void* prevData;
+			printf("Return Code: [%d]\n", DeleteEntry(mHashTable, key, &prevData));
+			if(!(prevData==NULL)){
+				printf("Node deleted: [%d]\n", *((int*)prevData));
+				free(prevData);
+				prevData = NULL;
+			}
 		}
 	}
 
