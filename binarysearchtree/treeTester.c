@@ -66,6 +66,19 @@ int main()
 				continue;
 			}
 			printf("Current size: %d\n", mNode->size);
+		}else if(!strcmp(input, "getkeys")){
+			char **keys;
+			int numKeys;
+			RetrieveKeys(mNode, &keys, &numKeys);
+			printf("keys: \n");
+			int i;
+			for(i=0; i<numKeys; i++){
+				printf("%s\n", *(keys+i));
+				free(*(keys+i));
+			}
+			if(numKeys>0){
+				free(keys);
+			}
 		} else {
 			printf("Invalid\n");
 		}
