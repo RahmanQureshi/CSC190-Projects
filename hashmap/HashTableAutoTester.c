@@ -9,7 +9,7 @@
 int main()
 {
 	char* input = malloc(sizeof(char) * 100);
-	HashTablePTR mHashTable;
+	HashTablePTR mHashTable = NULL;
 
 	while(1){
 		printf("Command: ");
@@ -42,7 +42,7 @@ int main()
 			printf("Key: ");
 			scanf("%s", key);
 			void* data;
-			printf("Return Code: [%d]", FindEntry(mHashTable, key, &data));
+			printf("Return Code: [%d]\n", FindEntry(mHashTable, key, &data));
 			if(data==NULL){
 				printf("Key not found\n");
 			}else{
@@ -55,10 +55,23 @@ int main()
 			void* prevData;
 			printf("Return Code: [%d]\n", DeleteEntry(mHashTable, key, &prevData));
 			if(!(prevData==NULL)){
-				printf("Node deleted: [%d]\n", *((int*)prevData));
+				printf("Node deleted. Data: %d\n", *((int*)prevData));
 				free(prevData);
 				prevData = NULL;
 			}
+		}else if( strcmp(input, "getkeys") == 0 ){
+			unsigned int numKeys;
+			char **keys;
+			printf("Return Code: [%d]\n", GetKeys( mHashTable, &keys, &numKeys));
+			int i;
+			printf("Keys:\n");
+			for(i=0; i<numKeys; i++){
+				printf("%s\n", keys[i]);
+				free(keys[i]);
+			}
+			free(keys);
+		}else{
+			printf("Invalid\n");
 		}
 	}
 

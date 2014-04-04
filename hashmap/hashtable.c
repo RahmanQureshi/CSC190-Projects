@@ -81,20 +81,25 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 	}
 
 	int hashCode = getHashCode(key, hashTable->info.bucketCount);
-	treeNodePTR tree = *(hashTable->buckets + hashCode);
-	if(tree==NULL){ // If size is 0
+	treeNodePTR* treeHandle = hashTable->buckets + hashCode;
+
+	if(*treeHandle==NULL){ // If size is 0
 		*previousDataHandle = NULL;
-		if( Insert(hashTable->buckets + hashCode, key, data) == -1 ){
+		if( Insert(treeHandle, key, data) == -1 ){
 			return -2; // Not enough memory
 		} else{
+			int numEntries = (int) ( hashTable->info.loadFactor * (float)hashTable->info.bucketCount ) + 1;
+			hashTable->info.loadFactor = (float)( (float) numEntries/ (float) hashTable->info.bucketCount);
 			return 0;
 		}
 	}else{
-		if(DeleteNode((hashTable->buckets + hashCode), key, previousDataHandle)==-1){
-			Insert(hashTable->buckets + hashCode, key, data);
+		if(DeleteNode(treeHandle, key, previousDataHandle)==-1){
+			Insert(treeHandle, key, data); // TODO: ADD IF STATEMENT AROUND THIS TO CHECK FOR MEMORY
+			int numEntries = (int) ( hashTable->info.loadFactor * (float)hashTable->info.bucketCount ) + 1;
+			hashTable->info.loadFactor = (float)( (float) numEntries/ (float) hashTable->info.bucketCount);
 			return 1; //Collision, different keys
 		}else{
-			Insert(hashTable->buckets + hashCode, key, data);
+			Insert(treeHandle, key, data);
 			previousDataHandle = NULL;
 			return 2; // Collision with same keys, previousDataHandle now points to data
 		}
@@ -111,6 +116,8 @@ int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle )
 	if(DeleteNode((hashTable->buckets + hashCode), key, dataHandle)==-1){
 		return -2;
 	}else{
+		int numEntries = (int) ( hashTable->info.loadFactor * (float)hashTable->info.bucketCount ) - 1;
+		hashTable->info.loadFactor = (float)( (float) numEntries/ (float) hashTable->info.bucketCount);
 		return 0;
 	}
 	return 0;
@@ -136,8 +143,36 @@ int FindEntry( HashTablePTR hashTable, char *key, void **dataHandle )
 
 int GetKeys( HashTablePTR hashTable, char ***keysArrayHandle, unsigned int *keyCount )
 {
+	if(!isValidHashTable(hashTable)){
+		return -1;
+	}
+
+	unsigned int totalNumKeys = (unsigned int) ( hashTable->info.loadFactor * (float)hashTable->info.bucketCount );
+	*keyCount = totalNumKeys;
+	
+	char **keysArray = malloc(sizeof(char*) * totalNumKeys);
+	int i;
+	int counter = 0; // number of keys processed so far
+	for(i=0; i<(hashTable->info.bucketCount); i++){
+		treeNodePTR tree = *(hashTable->buckets + i);
+		char **treeKeys;
+		int numKeys;
+		if( RetrieveKeys(tree, &treeKeys, &numKeys) == -2 ){
+			*keysArrayHandle = NULL;
+			return -2;
+		}else{
+			int j;
+			for(j=0; j<numKeys; j++){
+				keysArray[counter] = treeKeys[j];
+				counter++;;
+			}
+		}
+		free(treeKeys);
+	}
+	*keysArrayHandle = keysArray;
 	return 0;
 }
+
 
 int GetLoadFactor( HashTablePTR hashTable, float *loadFactor )
 {

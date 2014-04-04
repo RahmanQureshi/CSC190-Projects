@@ -6,7 +6,7 @@ void PrintNode(treeNodePTR node);
 int getMaxNodeHandle(treeNodePTR* rootHandle, treeNodePTR** handlehandle);
 int getMinNodeHandle(treeNodePTR* rootHandle, treeNodePTR** handlehandle);
 int StringToAscii(char*);
-
+int _RetrieveKeys(treeNodePTR node, char*** keysHandle);
 
 /* Function Implementations */
 
@@ -37,9 +37,7 @@ int Insert(treeNodePTR* rootHandle, char* key, void* value)
 {
 	treeNodePTR root = *rootHandle;
 
-	if( root!=NULL 
-		&& StringToAscii(key) 
-		< StringToAscii(root->key) ){
+	if( root!=NULL && StringToAscii(key) < StringToAscii(root->key) ){
 		root->size += 1; // Increment each node's value by 1
 		Insert(&(root->left), key, value);
 	}else if( root!=NULL && StringToAscii(key) >= StringToAscii(root->key) ){ // If equal, always go right
@@ -58,6 +56,10 @@ int Insert(treeNodePTR* rootHandle, char* key, void* value)
 
 int DeleteNode(struct treeNode** rootHandle, char* key, void** dataHandle)
 {
+	treeNodePTR temp = FindItem(*rootHandle, key);
+	if(temp==NULL) return -1; // If the node exists begin traversing and reducing sizes, otherwise simply return
+
+
 	// Find the node
 	treeNodePTR root = *rootHandle;
 
@@ -106,6 +108,40 @@ int DeleteNode(struct treeNode** rootHandle, char* key, void** dataHandle)
 		return 0;
 	}
 	return -1;
+}
+
+static int counter = 0; // Quick, hacky solution for counting the number of keys so far
+						// Ideally, the number of elements would be in a vector, and one would simply append
+
+int RetrieveKeys(treeNodePTR node, char*** keysHandle, int* numKeys) // Wrapper function
+{
+	if(node==NULL){
+		*numKeys = 0;
+		*keysHandle = NULL;
+		return 0;
+	}else{
+		*numKeys = node->size;
+		*keysHandle = (char**) malloc(sizeof(char*) * (unsigned long)(*numKeys));
+		if( _RetrieveKeys(node, keysHandle) == -2 ){
+			*keysHandle = NULL;
+			return -2;
+		}
+		counter = 0;
+		return 0;
+	}
+}
+
+int _RetrieveKeys(treeNodePTR node, char*** keysHandle)
+{
+	if(node==NULL) return 0;
+	char* copy = malloc(sizeof(char) * strlen(node->key) + 1);
+	if( copy == NULL) return -2;
+	strcpy(copy, node->key);
+	*(*keysHandle + counter) = copy;
+	counter +=1;
+	if( _RetrieveKeys(node->left, keysHandle) == -2) return -2;
+	if( _RetrieveKeys(node->right, keysHandle) == -2) return -2;
+	return 0;
 }
 
 struct treeNode *FindItem(struct treeNode* root, char* key)

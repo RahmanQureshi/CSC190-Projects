@@ -19,6 +19,7 @@ typedef void (*NodeProcessor)(treeNodePTR node);
 */
 int Insert(struct treeNode**, char*, void*);
 int DeleteNode(struct treeNode**, char*, void**);
+int RetrieveKeys(struct treeNode*, char***, int* numKeys);
 struct treeNode *FindItem(struct treeNode*, char*);
 int PrintPreOrder(struct treeNode*);
 int PrintInOrder(struct treeNode*);
