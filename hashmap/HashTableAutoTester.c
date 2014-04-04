@@ -70,6 +70,16 @@ int main()
 				free(keys[i]);
 			}
 			free(keys);
+		}else if( strcmp(input, "info") == 0 ){
+			HashTableInfo info;
+			GetHashTableInfo(mHashTable, &info);
+			printf("Bucket Count: %u\n", info.bucketCount);
+			printf("Load Factor: %f\n", info.loadFactor);
+			printf("Use Factor: %f\n", info.useFactor);
+			printf("Largest Bucket Size: %u\n", info.largestBucketSize);
+			printf("Dynamic Behaviour: %d\n", info.dynamicBehaviour);
+			printf("Expand Use Factor: %f\n", info.expandUseFactor);
+			printf("Contract Use Factor: %f\n", info.contractUseFactor);
 		}else{
 			printf("Invalid\n");
 		}

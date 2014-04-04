@@ -83,8 +83,8 @@ int DeleteNode(struct treeNode** rootHandle, char* key, void** dataHandle)
 		treeNodePTR *replace; // Get replacement node
 		getMaxNodeHandle(&(root->left), &replace);
 		// Swap keys, bring data up
-		char* temp = root->key;
-		root->key = (*replace)->key; // Replace the key and data
+		char* temp = root->key; // Replace the key and data
+		root->key = (*replace)->key; 
 		root->value = (*replace)->value;
 		(*replace)->key = temp;
 		void* dummy;

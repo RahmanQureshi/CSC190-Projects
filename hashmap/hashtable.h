@@ -19,15 +19,6 @@ typedef struct HashTableInfoTag
     float contractUseFactor; // the value of useFactor that will trigger a contraction in the number of buckets
 } HashTableInfo;
 
-
-typedef struct 
-{
-	void* key;
-	void* value;
-} KVP;
-
-typedef KVP *KVP_PTR;
-
 int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize );
 
 int DestroyHashTable( HashTablePTR *hashTableHandle );
@@ -39,5 +30,7 @@ int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle );
 int FindEntry( HashTablePTR hashTable, char *key, void **dataHandle );
 
 int GetKeys( HashTablePTR hashTable, char ***keysArrayHandle, unsigned int *keyCount );
+
+int GetHashTableInfo( HashTablePTR hashTable, HashTableInfo *pHashTableInfo ); // Replaces GetLoadFactor
 
 int PrintHashTable(HashTablePTR hashTable);

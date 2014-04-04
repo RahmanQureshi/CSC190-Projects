@@ -6,7 +6,10 @@
 int getHashCode(char* key, unsigned int range);
 int SimpleIntHash( int value, unsigned int range );
 
-int GetLoadFactor( HashTablePTR hashTable, float *loadFactor );
+// Function for computing load factor and use factor
+// Why? Computing properties in the middle of other functions is VERY distracting.
+// Also, people will not want the info most of the time anyway
+void ComputeProperties(HashTablePTR hashTable);
 
 int isValidHashTable(HashTablePTR hashTable);
 int checkSentinel(HashTablePTR hashTable);
@@ -88,15 +91,11 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 		if( Insert(treeHandle, key, data) == -1 ){
 			return -2; // Not enough memory
 		} else{
-			int numEntries = (int) ( hashTable->info.loadFactor * (float)hashTable->info.bucketCount ) + 1;
-			hashTable->info.loadFactor = (float)( (float) numEntries/ (float) hashTable->info.bucketCount);
 			return 0;
 		}
 	}else{
 		if(DeleteNode(treeHandle, key, previousDataHandle)==-1){
 			Insert(treeHandle, key, data); // TODO: ADD IF STATEMENT AROUND THIS TO CHECK FOR MEMORY
-			int numEntries = (int) ( hashTable->info.loadFactor * (float)hashTable->info.bucketCount ) + 1;
-			hashTable->info.loadFactor = (float)( (float) numEntries/ (float) hashTable->info.bucketCount);
 			return 1; //Collision, different keys
 		}else{
 			Insert(treeHandle, key, data);
@@ -104,7 +103,6 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 			return 2; // Collision with same keys, previousDataHandle now points to data
 		}
 	}
-	return 0;
 }
 
 int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle )
@@ -174,9 +172,44 @@ int GetKeys( HashTablePTR hashTable, char ***keysArrayHandle, unsigned int *keyC
 }
 
 
-int GetLoadFactor( HashTablePTR hashTable, float *loadFactor )
+int GetHashTableInfo(HashTablePTR hashTable, HashTableInfo *pHashTableInfo)
 {
+	if(!isValidHashTable(hashTable)){
+		return -1;
+	}
+	ComputeProperties(hashTable);
+	pHashTableInfo->bucketCount = hashTable->info.bucketCount;
+	pHashTableInfo->loadFactor = hashTable->info.loadFactor;
+	pHashTableInfo->useFactor = hashTable->info.useFactor;
+	pHashTableInfo->largestBucketSize = hashTable->info.largestBucketSize;
+	pHashTableInfo->dynamicBehaviour = hashTable->info.dynamicBehaviour;
+	pHashTableInfo->expandUseFactor = hashTable->info.expandUseFactor;
+	pHashTableInfo->contractUseFactor = hashTable->info.contractUseFactor;
+
 	return 0;
+}
+
+// Function for computing load factor and use factor
+// Why? Computing properties in the middle of other functions is VERY distracting.
+// Also, people will not want the info most of the time anyway
+void ComputeProperties(HashTablePTR hashTable)
+{
+	int i;
+	unsigned int largestBucketSize = 0; // minimum value is 0
+	int numEntries = 0;
+	int numNonEmptyBuckets = 0;
+	unsigned int numBuckets = hashTable->info.bucketCount;
+	for(i=0; i<numBuckets; i++)
+	{
+		treeNodePTR root = *(hashTable->buckets + i);
+		if(root==NULL) continue; // if the size is not 0
+		largestBucketSize = largestBucketSize > (root->size) ? largestBucketSize : (unsigned int)root->size;
+		numEntries += root->size;
+		numNonEmptyBuckets += 1;
+	}
+	hashTable->info.loadFactor = (float)numEntries / (float)numBuckets;
+	hashTable->info.useFactor = (float)numNonEmptyBuckets / (float)numBuckets;
+	hashTable->info.largestBucketSize = largestBucketSize;
 }
 
 int getHashCode(char* key, unsigned int range)
