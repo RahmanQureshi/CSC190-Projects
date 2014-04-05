@@ -2,6 +2,12 @@
 
 #define SENTINEL 0xDEADBEEF
 
+/*
+TODO:
+- Currently, ComputeProperties re-computes loadFactor etc from scratch which effectively increases insert and delete to n time which is ridiculous.
+- Simple solution: add variable tracking largestbucket index and CONFIRM values in O(1) time
+*/
+
 /* Declarations */
 int getHashCode(char* key, unsigned int range);
 int SimpleIntHash( int value, unsigned int range );
