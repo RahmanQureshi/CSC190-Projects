@@ -33,4 +33,9 @@ int GetKeys( HashTablePTR hashTable, char ***keysArrayHandle, unsigned int *keyC
 
 int GetHashTableInfo( HashTablePTR hashTable, HashTableInfo *pHashTableInfo ); // Replaces GetLoadFactor
 
+int SetResizeBehaviour( HashTablePTR hashTable, int dynamicBehaviour, float expandUseFactor, float contractUseFactor );
+
 int PrintHashTable(HashTablePTR hashTable);
+
+int Resize( HashTablePTR hashTable, unsigned int newSize); // Temporary for testing purposes
+

@@ -80,6 +80,22 @@ int main()
 			printf("Dynamic Behaviour: %d\n", info.dynamicBehaviour);
 			printf("Expand Use Factor: %f\n", info.expandUseFactor);
 			printf("Contract Use Factor: %f\n", info.contractUseFactor);
+		}else if( strcmp(input, "resize") == 0 ){
+			printf("New Size: ");
+			unsigned int newSize;
+			scanf("%u", &newSize);
+			printf("Return Code: [%d]\n", Resize(mHashTable, newSize));
+		}else if( strcmp(input, "setbehaviour") == 0 ){
+			int dynamicBehaviour;
+			float expandUseFactor;
+			float contractUseFactor;
+			printf("Dynamic Behaviour: ");
+			scanf("%d", &dynamicBehaviour);
+			printf("Expand Use Factor: ");
+			scanf("%f", &expandUseFactor);
+			printf("Contract Use Factor: ");
+			scanf("%f", &contractUseFactor);
+			printf("Return code: [%d]\n", SetResizeBehaviour( mHashTable, dynamicBehaviour, expandUseFactor,contractUseFactor));
 		}else{
 			printf("Invalid\n");
 		}

@@ -14,6 +14,9 @@ void ComputeProperties(HashTablePTR hashTable);
 int isValidHashTable(HashTablePTR hashTable);
 int checkSentinel(HashTablePTR hashTable);
 
+int Resize( HashTablePTR hashTable, unsigned int newSize);
+int MaintainProperties(HashTablePTR); // Originally took a handle, but due to API constraints by project, not possible
+
 struct HashTableObjectTag
 {
     int sentinel;
@@ -44,9 +47,9 @@ int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize )
 	newHashTable->info.loadFactor = 0;
 	newHashTable->info.useFactor = 0;
 	newHashTable->info.largestBucketSize = 0;
-	newHashTable->info.dynamicBehaviour = 0;
-	newHashTable->info.expandUseFactor = 0;
-	newHashTable->info.contractUseFactor = 0;
+	newHashTable->info.dynamicBehaviour = 1;
+	newHashTable->info.expandUseFactor = (float)0.7;
+	newHashTable->info.contractUseFactor = (float)0.2;
 
 	*hashTableHandle = newHashTable;
 	return 0;
@@ -68,7 +71,7 @@ int DestroyHashTable( HashTablePTR *hashTableHandle )
 		while(!(head==NULL)){
 			void* data;
 			DeleteNode(&head, head->key, &data);
-			free(data); // Assuming it is an integer; NOTE: COMMENT OUT FOR ASSIGNMENT
+			//free(data); // Assuming it is an integer; NOTE: COMMENT OUT FOR ASSIGNMENT
 		}
 	}
 	free(hashTable->buckets);
@@ -91,6 +94,9 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 		if( Insert(treeHandle, key, data) == -1 ){
 			return -2; // Not enough memory
 		} else{
+			if(hashTable->info.dynamicBehaviour){ // if dynamic behaviour is on
+				MaintainProperties(hashTable); // TODO IMPLEMENT
+			}
 			return 0;
 		}
 	}else{
@@ -145,10 +151,12 @@ int GetKeys( HashTablePTR hashTable, char ***keysArrayHandle, unsigned int *keyC
 		return -1;
 	}
 
+	ComputeProperties(hashTable); // Needed to get the number of keys
 	unsigned int totalNumKeys = (unsigned int) ( hashTable->info.loadFactor * (float)hashTable->info.bucketCount );
 	*keyCount = totalNumKeys;
 	
 	char **keysArray = malloc(sizeof(char*) * totalNumKeys);
+
 	int i;
 	int counter = 0; // number of keys processed so far
 	for(i=0; i<(hashTable->info.bucketCount); i++){
@@ -210,6 +218,69 @@ void ComputeProperties(HashTablePTR hashTable)
 	hashTable->info.loadFactor = (float)numEntries / (float)numBuckets;
 	hashTable->info.useFactor = (float)numNonEmptyBuckets / (float)numBuckets;
 	hashTable->info.largestBucketSize = largestBucketSize;
+}
+
+int MaintainProperties(HashTablePTR hashTable) // TODO: ERROR CODES
+{
+	ComputeProperties(hashTable);
+	if( hashTable->info.useFactor > hashTable->info.expandUseFactor )
+	{
+		unsigned int numEntries = (unsigned int) (hashTable->info.loadFactor * (float)hashTable->info.bucketCount );
+		unsigned int newSize = 2 * (numEntries / (unsigned int) hashTable->info.expandUseFactor );
+		Resize(hashTable, newSize);
+	}
+	return 0;
+}
+
+int SetResizeBehaviour( HashTablePTR hashTable, int dynamicBehaviour, float expandUseFactor, float contractUseFactor )
+{
+	if(!isValidHashTable(hashTable)){
+		return -1;
+	}
+	if(contractUseFactor>=expandUseFactor) return 1;
+	hashTable->info.contractUseFactor = contractUseFactor;
+	hashTable->info.expandUseFactor = expandUseFactor;
+	hashTable->info.dynamicBehaviour = dynamicBehaviour;
+	return 0;
+}
+
+int Resize( HashTablePTR hashTable, unsigned int newSize)
+{
+	if(!isValidHashTable(hashTable)){
+		return -1;
+	}
+
+	// Initialize memory (buckets)
+	HashTablePTR newHashTable;
+	CreateHashTable(&newHashTable, newSize);
+	SetResizeBehaviour(newHashTable, hashTable->info.dynamicBehaviour, hashTable->info.expandUseFactor, hashTable->info.contractUseFactor);
+
+	// Rehash
+	char **keys;
+	unsigned int numKeys;
+	GetKeys( hashTable, &keys, &numKeys);
+	int i;
+	for(i=0; i<numKeys; i++){
+		void* data;
+		DeleteEntry( hashTable, *(keys+i), &data);
+		void* dummy;
+		InsertEntry( newHashTable, *(keys+i), data, &dummy);
+		free(*(keys+i));
+	}
+	free(keys);
+
+	// Hacky solution - swap buckets
+	treeNodePTR* temp = hashTable->buckets;
+	unsigned int oldSize = hashTable->info.bucketCount;
+
+	hashTable->buckets = newHashTable->buckets;
+	hashTable->info.bucketCount = newSize;
+
+	newHashTable->buckets = temp;
+	newHashTable->info.bucketCount = oldSize; 
+	DestroyHashTable(&newHashTable);
+
+	return 0;
 }
 
 int getHashCode(char* key, unsigned int range)
