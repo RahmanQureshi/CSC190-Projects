@@ -94,8 +94,8 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 		if( Insert(treeHandle, key, data) == -1 ){
 			return -2; // Not enough memory
 		} else{
-			if(hashTable->info.dynamicBehaviour){ // if dynamic behaviour is on
-				MaintainProperties(hashTable); // TODO IMPLEMENT
+			if(!(hashTable->info.dynamicBehaviour==0)){ // if dynamic behaviour is on
+				MaintainProperties(hashTable); // Inserted into a new bucket, make sure that useFactor !> expandFactor
 			}
 			return 0;
 		}
@@ -120,8 +120,9 @@ int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle )
 	if(DeleteNode((hashTable->buckets + hashCode), key, dataHandle)==-1){
 		return -2;
 	}else{
-		int numEntries = (int) ( hashTable->info.loadFactor * (float)hashTable->info.bucketCount ) - 1;
-		hashTable->info.loadFactor = (float)( (float) numEntries/ (float) hashTable->info.bucketCount);
+		if(!(hashTable->info.dynamicBehaviour==0)){ // if dynamic behaviour is on
+			MaintainProperties(hashTable); // Successful deletion, make sure everything is OK
+		}
 		return 0;
 	}
 	return 0;
@@ -223,10 +224,15 @@ void ComputeProperties(HashTablePTR hashTable)
 int MaintainProperties(HashTablePTR hashTable) // TODO: ERROR CODES
 {
 	ComputeProperties(hashTable);
+	unsigned int numEntries = (unsigned int) (hashTable->info.loadFactor * (float)hashTable->info.bucketCount );
+
 	if( hashTable->info.useFactor > hashTable->info.expandUseFactor )
 	{
-		unsigned int numEntries = (unsigned int) (hashTable->info.loadFactor * (float)hashTable->info.bucketCount );
-		unsigned int newSize = 2 * (numEntries / (unsigned int) hashTable->info.expandUseFactor );
+		unsigned int newSize = 2 * (unsigned int) ( (float) numEntries / hashTable->info.expandUseFactor );
+		Resize(hashTable, newSize);
+	}else if(hashTable->info.useFactor < hashTable->info.contractUseFactor) // Assume perfect hash distribution
+	{
+		unsigned int newSize =  (unsigned int) ( ( (float) numEntries / hashTable->info.contractUseFactor ) / 2.0 );
 		Resize(hashTable, newSize);
 	}
 	return 0;
@@ -249,11 +255,15 @@ int Resize( HashTablePTR hashTable, unsigned int newSize)
 	if(!isValidHashTable(hashTable)){
 		return -1;
 	}
+	// Create new hashmap and then swap the bucket arrays
 
 	// Initialize memory (buckets)
 	HashTablePTR newHashTable;
 	CreateHashTable(&newHashTable, newSize);
-	SetResizeBehaviour(newHashTable, hashTable->info.dynamicBehaviour, hashTable->info.expandUseFactor, hashTable->info.contractUseFactor);
+
+	// Temporarily disable re-sizing
+	SetResizeBehaviour(hashTable, 0, hashTable->info.expandUseFactor, hashTable->info.contractUseFactor);
+	SetResizeBehaviour(newHashTable, 0, 2, -1);
 
 	// Rehash
 	char **keys;
@@ -279,6 +289,9 @@ int Resize( HashTablePTR hashTable, unsigned int newSize)
 	newHashTable->buckets = temp;
 	newHashTable->info.bucketCount = oldSize; 
 	DestroyHashTable(&newHashTable);
+
+	// Re-enable
+	SetResizeBehaviour(hashTable, 1, hashTable->info.expandUseFactor, hashTable->info.contractUseFactor);
 
 	return 0;
 }
