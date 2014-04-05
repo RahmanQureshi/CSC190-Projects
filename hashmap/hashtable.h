@@ -35,5 +35,7 @@ int GetHashTableInfo( HashTablePTR hashTable, HashTableInfo *pHashTableInfo ); /
 
 int SetResizeBehaviour( HashTablePTR hashTable, int dynamicBehaviour, float expandUseFactor, float contractUseFactor );
 
+int Resize( HashTablePTR hashTable, unsigned int newSize); // Manual Re-size
+
 int PrintHashTable(HashTablePTR hashTable);
 

@@ -20,7 +20,6 @@ void ComputeProperties(HashTablePTR hashTable);
 int isValidHashTable(HashTablePTR hashTable);
 int checkSentinel(HashTablePTR hashTable);
 
-int Resize( HashTablePTR hashTable, unsigned int newSize);
 int MaintainProperties(HashTablePTR); // Originally took a handle, but due to API constraints by project, not possible
 
 struct HashTableObjectTag
