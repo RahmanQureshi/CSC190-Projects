@@ -37,5 +37,3 @@ int SetResizeBehaviour( HashTablePTR hashTable, int dynamicBehaviour, float expa
 
 int PrintHashTable(HashTablePTR hashTable);
 
-int Resize( HashTablePTR hashTable, unsigned int newSize); // Temporary for testing purposes
-

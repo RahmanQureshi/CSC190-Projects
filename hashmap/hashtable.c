@@ -32,11 +32,18 @@ int CreateHashTable( HashTablePTR *hashTableHandle, unsigned int initialSize )
 	// Create hashtable
 	HashTablePTR newHashTable = malloc(sizeof(struct HashTableObjectTag));
 	
+	if(newHashTable==NULL){
+		return -1; // insufficient memory
+	}
+
 	// Set the sentinel
 	newHashTable->sentinel = (int) SENTINEL;
 
 	// Initialize memory (buckets)
 	newHashTable->buckets = (treeNodePTR*) malloc(sizeof(treeNodePTR) * initialSize);
+	if(newHashTable->buckets==NULL){
+		return -1;
+	}
 	int i;
 	for(i=0; i<initialSize; i++){
 		*(newHashTable->buckets + i) = NULL;
@@ -95,20 +102,26 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 			return -2; // Not enough memory
 		} else{
 			if(!(hashTable->info.dynamicBehaviour==0)){ // if dynamic behaviour is on
-				MaintainProperties(hashTable); // Inserted into a new bucket, make sure that useFactor !> expandFactor
+				MaintainProperties(hashTable); // Inserted into a new bucket, make sure that !(useFactor > expandFactor)
 			}
 			return 0;
 		}
 	}else{
-		if(DeleteNode(treeHandle, key, previousDataHandle)==-1){
-			Insert(treeHandle, key, data); // TODO: ADD IF STATEMENT AROUND THIS TO CHECK FOR MEMORY
-			return 1; //Collision, different keys
+		if( DeleteNode(treeHandle, key, previousDataHandle) == -1 ){
+			if( Insert(treeHandle, key, data) == -1 ){
+				return -2;
+			}else{
+				return 1; //Collision, different keys
+			}
 		}else{
-			Insert(treeHandle, key, data);
+			if( Insert(treeHandle, key, data) == -1 ){
+				return -2;
+			}
 			previousDataHandle = NULL;
 			return 2; // Collision with same keys, previousDataHandle now points to data
 		}
 	}
+
 }
 
 int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle )
@@ -229,11 +242,23 @@ int MaintainProperties(HashTablePTR hashTable) // TODO: ERROR CODES
 	if( hashTable->info.useFactor > hashTable->info.expandUseFactor )
 	{
 		unsigned int newSize = 2 * (unsigned int) ( (float) numEntries / hashTable->info.expandUseFactor );
-		Resize(hashTable, newSize);
+		if(newSize == 0){
+			newSize = 1;
+		}
+		if(Resize(hashTable, newSize) == -2){
+			printf("There was insufficient memory to resize\n");
+			return -1;
+		};
 	}else if(hashTable->info.useFactor < hashTable->info.contractUseFactor) // Assume perfect hash distribution
 	{
 		unsigned int newSize =  (unsigned int) ( ( (float) numEntries / hashTable->info.contractUseFactor ) / 2.0 );
-		Resize(hashTable, newSize);
+		if(newSize == 0){
+			newSize = 1;
+		}
+		if(Resize(hashTable, newSize) == -2){
+			printf("There was insufficient memory to resize\n");
+			return -1;
+		};
 	}
 	return 0;
 }
@@ -268,13 +293,17 @@ int Resize( HashTablePTR hashTable, unsigned int newSize)
 	// Rehash
 	char **keys;
 	unsigned int numKeys;
-	GetKeys( hashTable, &keys, &numKeys);
+	if(GetKeys( hashTable, &keys, &numKeys) == -2){
+		return -2;
+	}
 	int i;
 	for(i=0; i<numKeys; i++){
 		void* data;
 		DeleteEntry( hashTable, *(keys+i), &data);
 		void* dummy;
-		InsertEntry( newHashTable, *(keys+i), data, &dummy);
+		if( InsertEntry( newHashTable, *(keys+i), data, &dummy) == -2){
+			return -2; // Not enough memory
+		}
 		free(*(keys+i));
 	}
 	free(keys);
