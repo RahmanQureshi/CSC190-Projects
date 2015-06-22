@@ -10,10 +10,10 @@ typedef HashTableObject *HashTablePTR;
 
 typedef struct HashTableInfoTag
 {
-    unsigned int bucketCount; // current number of buckets
+    unsigned int bucketCount;
+    unsigned int largestBucketSize;
     float loadFactor; // ( number of entries / number of buckets )
     float useFactor; // ( number of buckets with one or more entries / number of buckets )
-    unsigned int largestBucketSize; // number of entries in the bucket containing the most entries
     int dynamicBehaviour; // whether or not the Hash Table will resize dynamically
     float expandUseFactor; // the value of useFactor that will trigger an expansion of the number of buckets
     float contractUseFactor; // the value of useFactor that will trigger a contraction in the number of buckets

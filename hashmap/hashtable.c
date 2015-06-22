@@ -2,25 +2,16 @@
 
 #define SENTINEL 0xDEADBEEF
 
-/*
-TODO:
-- Currently, ComputeProperties re-computes loadFactor etc from scratch which effectively increases insert and delete to n time which is ridiculous.
-- Simple solution: add variable tracking largestbucket index and CONFIRM values in O(1) time
-*/
-
 /* Declarations */
 int getHashCode(char* key, unsigned int range);
 int SimpleIntHash( int value, unsigned int range );
 
-// Function for computing load factor and use factor
-// Why? Computing properties in the middle of other functions is VERY distracting.
-// Also, people will not want the info most of the time anyway
-void ComputeProperties(HashTablePTR hashTable);
+void ComputeProperties(HashTablePTR hashTable); // unused
 
 int isValidHashTable(HashTablePTR hashTable);
 int checkSentinel(HashTablePTR hashTable);
 
-int MaintainProperties(HashTablePTR); // Originally took a handle, but due to API constraints by project, not possible
+int MaintainProperties(HashTablePTR);
 
 struct HashTableObjectTag
 {
@@ -106,8 +97,10 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 		if( Insert(treeHandle, key, data) == -1 ){
 			return -2; // Not enough memory
 		} else{
-			if(!(hashTable->info.dynamicBehaviour==0)){ // if dynamic behaviour is on
-				MaintainProperties(hashTable); // Inserted into a new bucket, make sure that !(useFactor > expandFactor)
+		        hashTable->info.loadFactor += 1.f/ (float)hashTable->info.bucketCount;
+			hashTable->info.useFactor += 1.f / (float) hashTable->info.bucketCount;
+			if(!(hashTable->info.dynamicBehaviour==0)){ 
+				MaintainProperties(hashTable); // make sure that !(useFactor > expandFactor)
 			}
 			return 0;
 		}
@@ -116,13 +109,17 @@ int InsertEntry( HashTablePTR hashTable, char *key, void *data, void **previousD
 			if( Insert(treeHandle, key, data) == -1 ){
 				return -2;
 			}else{
+				hashTable->info.loadFactor += 1.f/(float)hashTable->info.bucketCount;
+				if(!(hashTable->info.dynamicBehaviour==0)){ 
+				  MaintainProperties(hashTable); // make sure that !(useFactor > expandFactor)
+				}
+				*previousDataHandle = NULL;
 				return 1; //Collision, different keys
 			}
 		}else{
 			if( Insert(treeHandle, key, data) == -1 ){
 				return -2;
 			}
-			previousDataHandle = NULL;
 			return 2; // Collision with same keys, previousDataHandle now points to data
 		}
 	}
@@ -136,8 +133,13 @@ int DeleteEntry( HashTablePTR hashTable, char *key, void **dataHandle )
 	}
 	int hashCode = getHashCode(key, hashTable->info.bucketCount);
 	if(DeleteNode((hashTable->buckets + hashCode), key, dataHandle)==-1){
+       	  	*dataHandle = NULL;
 		return -2;
 	}else{
+	        hashTable->info.loadFactor -= 1.f/(float)hashTable->info.bucketCount;
+		if ( *(hashTable->buckets + hashCode) == NULL || (*(hashTable->buckets + hashCode))->size == 0) {
+		        hashTable->info.useFactor -= 1.f/(float)hashTable->info.bucketCount;
+		}
 		if(!(hashTable->info.dynamicBehaviour==0)){ // if dynamic behaviour is on
 			MaintainProperties(hashTable); // Successful deletion, make sure everything is OK
 		}
@@ -170,10 +172,9 @@ int GetKeys( HashTablePTR hashTable, char ***keysArrayHandle, unsigned int *keyC
 		return -1;
 	}
 
-	ComputeProperties(hashTable); // Needed to get the number of keys
-	unsigned int totalNumKeys = (unsigned int) ( hashTable->info.loadFactor * (float)hashTable->info.bucketCount );
+	unsigned int totalNumKeys = (unsigned int) ( hashTable->info.loadFactor * (float)hashTable->info.bucketCount + 0.5f); // 0.99999 bug
 	*keyCount = totalNumKeys;
-	
+
 	char **keysArray = malloc(sizeof(char*) * totalNumKeys);
 
 	int i;
@@ -216,13 +217,10 @@ int GetHashTableInfo(HashTablePTR hashTable, HashTableInfo *pHashTableInfo)
 	return 0;
 }
 
-// Function for computing load factor and use factor
-// Why? Computing properties in the middle of other functions is VERY distracting.
-// Also, people will not want the info most of the time anyway
 void ComputeProperties(HashTablePTR hashTable)
 {
 	int i;
-	unsigned int largestBucketSize = 0; // minimum value is 0
+	unsigned int largestBucketSize = 0;
 	int numEntries = 0;
 	int numNonEmptyBuckets = 0;
 	unsigned int numBuckets = hashTable->info.bucketCount;
@@ -230,7 +228,7 @@ void ComputeProperties(HashTablePTR hashTable)
 	{
 		treeNodePTR root = *(hashTable->buckets + i);
 		if(root==NULL) continue; // if the size is not 0
-		largestBucketSize = largestBucketSize > (root->size) ? largestBucketSize : (unsigned int)root->size;
+		largestBucketSize = largestBucketSize > (root->size) ? largestBucketSize : (unsigned int) root->size;
 		numEntries += root->size;
 		numNonEmptyBuckets += 1;
 	}
@@ -239,9 +237,8 @@ void ComputeProperties(HashTablePTR hashTable)
 	hashTable->info.largestBucketSize = largestBucketSize;
 }
 
-int MaintainProperties(HashTablePTR hashTable) // TODO: ERROR CODES
+int MaintainProperties(HashTablePTR hashTable) 
 {
-	ComputeProperties(hashTable);
 	unsigned int numEntries = (unsigned int) (hashTable->info.loadFactor * (float)hashTable->info.bucketCount );
 
 	if( hashTable->info.useFactor > hashTable->info.expandUseFactor )
@@ -254,7 +251,7 @@ int MaintainProperties(HashTablePTR hashTable) // TODO: ERROR CODES
 			printf("There was insufficient memory to resize\n");
 			return -1;
 		};
-	}else if(hashTable->info.useFactor < hashTable->info.contractUseFactor) // Assume perfect hash distribution
+	}else if(hashTable->info.useFactor < hashTable->info.contractUseFactor)
 	{
 		unsigned int newSize =  (unsigned int) ( ( (float) numEntries / hashTable->info.contractUseFactor ) / 2.0 );
 		if(newSize == 0){
@@ -313,7 +310,7 @@ int Resize( HashTablePTR hashTable, unsigned int newSize)
 	}
 	free(keys);
 
-	// Hacky solution - swap buckets
+	// swap buckets
 	treeNodePTR* temp = hashTable->buckets;
 	unsigned int oldSize = hashTable->info.bucketCount;
 
@@ -324,6 +321,9 @@ int Resize( HashTablePTR hashTable, unsigned int newSize)
 	newHashTable->info.bucketCount = oldSize; 
 	DestroyHashTable(&newHashTable);
 
+	// necessary because of rehashing
+	ComputeProperties(hashTable);
+	
 	// Re-enable
 	SetResizeBehaviour(hashTable, 1, hashTable->info.expandUseFactor, hashTable->info.contractUseFactor);
 
