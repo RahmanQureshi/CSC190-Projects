@@ -3,3 +3,4 @@ clang -std=c99 -g -c -Wall -Werror -Wconversion -pedantic LinkedListAutoTester.c
 clang -std=c99 -g -c -Wall -Werror -Wconversion -pedantic LinkedListManualTester.c -o LinkedListManualTester.o
 clang -std=c99 -g -Wall -Werror -Wconversion -pedantic LinkedList.o LinkedListAutoTester.o -o LinkedListAutoTester
 clang -std=c99 -g -Wall -Werror -Wconversion -pedantic LinkedList.o LinkedListManualTester.o -o LinkedListManualTester
+rm *.o

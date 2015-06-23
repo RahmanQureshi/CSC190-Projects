@@ -1,3 +1,4 @@
 gcc -std=c99 -c -g -pedantic -Wall -Werror -Wconversion Vector.c -o Vector.o
 gcc -std=c99 -c -g -pedantic -Wall -Werror -Wconversion VectorAutoTester.c -o VectorAutoTester.o
 gcc Vector.o VectorAutoTester.o -o VectorAutoTester
+rm *.o

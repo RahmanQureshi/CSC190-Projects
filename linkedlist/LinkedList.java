@@ -1,7 +1,5 @@
 public class LinkedList<E> {
 
-    //Bad coding practice to make everything public. Only for debugging purposes
-
     public Element front; //The newest element added to the list
     public Element back; //The oldest element added to the list
     public int size = 0;
@@ -12,8 +10,6 @@ public class LinkedList<E> {
     }
 
     public void insert(E e) {
-	//Re-assign the front, have the front point to the last front (which is behind it). Being infront, there is no element infront of it
-	//But the last front now has an element infront of it too
     	size+=1;
     	Element temp = new Element(e, front, null); // The new front. The element behind it is the old front (null if empty). Being infront, there is no element infrnt of it (therefore null)
 		if(size==1) {
@@ -24,7 +20,6 @@ public class LinkedList<E> {
 			front = temp;
     }
 
-    //Remember to check if empty
     public E pop_front(){
 		if(front==null) return null;
 		//Store the front in temporary variable

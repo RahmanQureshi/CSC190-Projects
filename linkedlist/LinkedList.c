@@ -142,13 +142,6 @@ int InsertSortedLinkedList(LinkedListPTR linkedList, void* data)
 		return OK;
 	}
 
-	// While the new node is less than the current node and less than the next node
-		// Keep walking down
-	// If we consider the cornercase of head first (head being less than curNode):
-	// We note that by induction, the current node MUST be less than the new node, so only check the next node
-	// If the while-loop breaks => the new node is less than the current node but greater than the next node, so it belongs after the current
-
-
 	if(comparator(newNode->data, curNode->data)==1){ // Corner case - first node
 		newNode->next = curNode;
 		linkedList->head = newNode;
