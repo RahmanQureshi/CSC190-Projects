@@ -4,7 +4,7 @@ A collection of data structures written in C for CSC190. There is also a Linked 
 
 ##Compiling##
 
-If there is a MakeFile, type in `make`, otherwise type `./make-gcc` or `./make-clang` depending on your compiler. This will output a 'tester' file and remove all object files.
+If there is a MakeFile, type in `make`, otherwise type `./make-gcc`. This will output a 'tester' file and remove all object files.
 
 ##Usage##
 
